@@ -1,0 +1,104 @@
+server:
+  replicaCount: 1
+  metrics:
+    annotations:
+      enabled: true
+
+  nodeSelector:
+    cloud.google.com/gke-nodepool: cadence
+
+  tolerations:
+  - key: "node-pool"
+    operator: "Equal"
+    value: "cadence"
+    effect: "NoSchedule"
+
+  affinity: {}
+
+  config:
+    numHistoryShards: 2048
+    persistence:
+      default:
+        driver: "cassandra" # cassandra or sql
+
+        cassandra:
+          hosts: "cassandra-0.cassandra"
+          port: 9042
+          keyspace: cadence
+          consistency: One
+
+      visibility:
+        driver: "cassandra" # cassandra or sql
+
+        cassandra:
+          hosts: "cassandra-0.cassandra"
+          port: 9042
+          keyspace: cadence_visibility
+          consistency: One
+
+web:
+  replicaCount: 1
+  nodeSelector:
+    cloud.google.com/gke-nodepool: cadence
+
+  tolerations:
+  - key: "node-pool"
+    operator: "Equal"
+    value: "cadence"
+    effect: "NoSchedule"
+
+frontend:
+  replicaCount: 1
+  nodeSelector:
+    cloud.google.com/gke-nodepool: cadence
+
+  tolerations:
+  - key: "node-pool"
+    operator: "Equal"
+    value: "cadence"
+    effect: "NoSchedule"
+
+history:
+  replicaCount: 1
+  nodeSelector:
+    cloud.google.com/gke-nodepool: cadence
+
+  tolerations:
+  - key: "node-pool"
+    operator: "Equal"
+    value: "cadence"
+    effect: "NoSchedule"
+
+matching:
+  replicaCount: 1
+  nodeSelector:
+    cloud.google.com/gke-nodepool: cadence
+
+  tolerations:
+  - key: "node-pool"
+    operator: "Equal"
+    value: "cadence"
+    effect: "NoSchedule"
+
+worker:
+  replicaCount: 1
+  nodeSelector:
+    cloud.google.com/gke-nodepool: cadence
+
+  tolerations:
+  - key: "node-pool"
+    operator: "Equal"
+    value: "cadence"
+    effect: "NoSchedule"
+
+schema:
+  setup:
+    enabled: false
+  update:
+    enabled: false
+
+cassandra:
+  enabled: false
+
+mysql:
+  enabled: false

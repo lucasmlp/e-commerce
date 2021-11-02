@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Pod
+
+metadata:
+  name: ephemeral-cadence-server
+  labels:
+    component: cadence
+
+spec:
+  containers:
+  - name: ephemeral-cadence-server
+    image: ubercadence/server:0.21.3
+    command:
+      - "sleep"
+      - "604800"
+  nodeSelector:
+    cloud.google.com/gke-nodepool: cadence
+  tolerations:
+  - key: "node-pool"
+    operator: "Equal"
+    value: "cadence"
+    effect: "NoSchedule"
