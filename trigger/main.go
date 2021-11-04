@@ -33,7 +33,7 @@ func main() {
 		_, err = triggerClient.StartWorkflow(context.Background(), client.StartWorkflowOptions{
 			ID:                           workflowID,
 			TaskList:                     "order-tasklist",
-			ExecutionStartToCloseTimeout: 1 * time.Second,
+			ExecutionStartToCloseTimeout: 5 * time.Minute,
 		}, workflows.RunOrder)
 	}
 
