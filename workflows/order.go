@@ -2,6 +2,7 @@ package workflows
 
 import (
 	"errors"
+	"time"
 
 	"github.com/pborman/uuid"
 	"go.uber.org/cadence/workflow"
@@ -53,17 +54,28 @@ func handleStockCheckAndReservation(ctx workflow.Context) error {
 	var signalVal string
 	signalName := "stock-check-reservation-finished"
 	signalChan := workflow.GetSignalChannel(ctx, signalName)
+
+	timerCtx, cancelTimer := workflow.WithCancel(ctx)
+	stepTimeout := workflow.NewTimer(timerCtx, 30*time.Second)
+
 	s := workflow.NewSelector(ctx)
 
+	var receivedSignal bool
 	s.AddReceive(signalChan, func(c workflow.Channel, more bool) {
 		c.Receive(ctx, &signalVal)
+		receivedSignal = true
+		cancelTimer()
 		logger.Info("Recieved stock-check-reservation-finished signal",
 			zap.String("Signal value: ", signalVal))
 	})
 
+	s.AddFuture(stepTimeout, func(f workflow.Future) {
+		logger.Info("Step timed out")
+	})
+
 	s.Select(ctx)
 
-	if signalVal == "Success" {
+	if receivedSignal && signalVal == "Success" {
 		return nil
 	} else {
 		return errors.New("Failed to check stock and reserve product(s)")
@@ -78,17 +90,28 @@ func handlePaymentProcess(ctx workflow.Context) error {
 	var signalVal string
 	signalName := "payment-finished"
 	signalChan := workflow.GetSignalChannel(ctx, signalName)
+
+	timerCtx, cancelTimer := workflow.WithCancel(ctx)
+	stepTimeout := workflow.NewTimer(timerCtx, 30*time.Second)
+
 	s := workflow.NewSelector(ctx)
 
+	var receivedSignal bool
 	s.AddReceive(signalChan, func(c workflow.Channel, more bool) {
 		c.Receive(ctx, &signalVal)
+		receivedSignal = true
+		cancelTimer()
 		logger.Info("Recieved payment-finished signal",
 			zap.String("Signal value: ", signalVal))
 	})
 
+	s.AddFuture(stepTimeout, func(f workflow.Future) {
+		logger.Info("Step timed out")
+	})
+
 	s.Select(ctx)
 
-	if signalVal == "Success" {
+	if receivedSignal && signalVal == "Success" {
 		return nil
 	} else {
 		return errors.New("Failed to process product(s) payment")
@@ -103,17 +126,28 @@ func handleShipment(ctx workflow.Context) error {
 	var signalVal string
 	signalName := "shipment-finished"
 	signalChan := workflow.GetSignalChannel(ctx, signalName)
+
+	timerCtx, cancelTimer := workflow.WithCancel(ctx)
+	stepTimeout := workflow.NewTimer(timerCtx, 30*time.Second)
+
 	s := workflow.NewSelector(ctx)
 
+	var receivedSignal bool
 	s.AddReceive(signalChan, func(c workflow.Channel, more bool) {
 		c.Receive(ctx, &signalVal)
+		receivedSignal = true
+		cancelTimer()
 		logger.Info("Recieved shipment-finished signal",
 			zap.String("Signal value: ", signalVal))
 	})
 
+	s.AddFuture(stepTimeout, func(f workflow.Future) {
+		logger.Info("Step timed out")
+	})
+
 	s.Select(ctx)
 
-	if signalVal == "Success" {
+	if receivedSignal && signalVal == "Success" {
 		return nil
 	} else {
 		return errors.New("Failed to process product(s) shipment")
