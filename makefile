@@ -30,14 +30,11 @@ cadence-worker:
 run-order:
 	@ go run ./trigger/main.go RunOrder
 
-activity:
-	@ go run ./trigger/main.go Activity
+stock-check-reservation-finished:
+	@ go run ./trigger/main.go StockCheckReservationFinished $(filter-out $@,$(MAKECMDGOALS))
 
-waiting-signal:
-	@ go run ./trigger/main.go WaitingSignal
+payment-finished:
+	@ go run ./trigger/main.go PaymentFinished $(filter-out $@,$(MAKECMDGOALS))
 
-version:
-	@ go run ./trigger/main.go Version
-
-version2:
-	@ go run ./trigger/main.go Version2
+shipment-finished:
+	@ go run ./trigger/main.go ShipmentFinished $(filter-out $@,$(MAKECMDGOALS))
