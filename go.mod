@@ -3,6 +3,7 @@ module github.com/machado-br/order-service
 go 1.17
 
 require (
+	github.com/pborman/uuid v0.0.0-20160209185913-a97ce2ca70fa
 	go.uber.org/cadence v0.18.3
 	go.uber.org/yarpc v1.58.0
 	go.uber.org/zap v1.13.0
@@ -19,7 +20,6 @@ require (
 	github.com/golang/protobuf v1.3.3 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect
 	github.com/opentracing/opentracing-go v1.1.0 // indirect
-	github.com/pborman/uuid v0.0.0-20160209185913-a97ce2ca70fa // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_golang v1.4.1 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect

@@ -5,8 +5,10 @@ import (
 	"os"
 
 	"github.com/machado-br/order-service/helpers"
+	"github.com/machado-br/order-service/workflows"
 
 	"go.uber.org/cadence/worker"
+	"go.uber.org/cadence/workflow"
 	"go.uber.org/zap"
 )
 
@@ -27,7 +29,11 @@ func main() {
 		panic(err)
 	}
 
-	w := worker.New(workflowClient, domainName, "pocTasklist",
+	workflow.RegisterWithOptions(workflows.RunOrder, workflow.RegisterOptions{
+		Name: "RunOrder",
+	})
+
+	w := worker.New(workflowClient, domainName, "order-tasklist",
 		worker.Options{
 			Logger: logger,
 		})

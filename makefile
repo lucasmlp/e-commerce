@@ -27,8 +27,8 @@ cadence-worker:
 	@ echo
 	@ go run ./worker/main.go
 
-hello-world:
-	@ go run ./trigger/main.go HelloWorld
+run-order:
+	@ go run ./trigger/main.go RunOrder
 
 activity:
 	@ go run ./trigger/main.go Activity
