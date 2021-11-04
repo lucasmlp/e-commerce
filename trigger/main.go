@@ -35,8 +35,8 @@ func main() {
 			TaskList:                     "order-tasklist",
 			ExecutionStartToCloseTimeout: 5 * time.Minute,
 		}, workflows.RunOrder)
-	case "StockCheckReservationFinished":
-		err = triggerClient.SignalWorkflow(context.Background(), os.Args[2], "", "stock-check-reservation-finished", "Success")
+	case "StorageCheckReservationFinished":
+		err = triggerClient.SignalWorkflow(context.Background(), os.Args[2], "", "storage-check-reservation-finished", "Success")
 	case "PaymentFinished":
 		err = triggerClient.SignalWorkflow(context.Background(), os.Args[2], "", "payment-finished", "Success")
 	case "ShipmentFinished":

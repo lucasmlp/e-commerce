@@ -30,8 +30,8 @@ cadence-worker:
 run-order:
 	@ go run ./trigger/main.go RunOrder
 
-stock-check-reservation-finished:
-	@ go run ./trigger/main.go StockCheckReservationFinished $(filter-out $@,$(MAKECMDGOALS))
+storage-check-reservation-finished:
+	@ go run ./trigger/main.go StorageCheckReservationFinished $(filter-out $@,$(MAKECMDGOALS))
 
 payment-finished:
 	@ go run ./trigger/main.go PaymentFinished $(filter-out $@,$(MAKECMDGOALS))

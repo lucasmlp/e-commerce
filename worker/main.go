@@ -30,6 +30,10 @@ func main() {
 	}
 
 	workflow.RegisterWithOptions(workflows.RunOrder, workflow.RegisterOptions{
+		Name: "RunStorage",
+	})
+
+	workflow.RegisterWithOptions(workflows.RunOrder, workflow.RegisterOptions{
 		Name: "RunOrder",
 	})
 
