@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	standardStepTimeout          = 60 * time.Second
+	standardStepTimeout          = 90 * time.Second
 	standardChildWorkflowTimeout = 30 * time.Second
 )
 
@@ -59,7 +59,7 @@ func handleStorageCheckAndReservation(ctx workflow.Context) error {
 	cwo := workflow.ChildWorkflowOptions{
 		// Do not specify WorkflowID if you want Cadence to generate a unique ID for the child execution.
 		WorkflowID:                   uuid.New(),
-		ExecutionStartToCloseTimeout: time.Minute * 30,
+		ExecutionStartToCloseTimeout: time.Minute * 2,
 	}
 	ctx = workflow.WithChildOptions(ctx, cwo)
 

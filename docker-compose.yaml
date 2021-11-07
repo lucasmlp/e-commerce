@@ -2,11 +2,13 @@ version: '3'
 services:
   cassandra:
     image: cassandra:3.11
+    container_name: cadence-cassandra
     ports:
       - "9042:9042"
  
   cadence:
     image: ubercadence/server:master-auto-setup
+    container_name: cadence-server
     ports:
       - "7933:7933"
       - "7934:7934"
@@ -20,6 +22,7 @@ services:
  
   cadence-web:
     image: ubercadence/web:latest
+    container_name: cadence-web
     environment:
       - "CADENCE_TCHANNEL_PEERS=cadence:7933"
     ports:

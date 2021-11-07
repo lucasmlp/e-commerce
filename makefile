@@ -21,6 +21,12 @@ cadence-containers:
 	@ echo
 	@ docker-compose up -d cassandra cadence cadence-web
 
+database:
+	@ echo
+	@ echo "Starting Cassandra Cadence and Cadence Web..."
+	@ echo
+	docker-compose -f stack.yml up
+
 cadence-worker:
 	@ echo
 	@ echo "Starting the Cadence Worker..."

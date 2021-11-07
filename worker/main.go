@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/machado-br/order-service/activities"
 	"github.com/machado-br/order-service/helpers"
 	"github.com/machado-br/order-service/workflows"
 
+	"go.uber.org/cadence/activity"
 	"go.uber.org/cadence/worker"
 	"go.uber.org/cadence/workflow"
 	"go.uber.org/zap"
@@ -36,6 +38,8 @@ func main() {
 	workflow.RegisterWithOptions(workflows.RunOrder, workflow.RegisterOptions{
 		Name: "RunOrder",
 	})
+
+	activity.Register(activities.GetProductUnits)
 
 	w := worker.New(workflowClient, domainName, "order-tasklist",
 		worker.Options{
