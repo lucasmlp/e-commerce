@@ -2,73 +2,81 @@ package activities
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
-	"time"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 const (
-	mongoURI = "mongodb://localhost:27017"
+	mongoURI  = "mongodb://localhost:27017"
+	productId = "49f2cea1-7648-4e88-947f-0b8db5cb845a"
 )
 
+type Product struct {
+	Id    string
+	Name  string
+	Units int
+}
+
 func GetProductUnits(ctx context.Context) (int, error) {
-	// Open Connection
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// End Open Connection Code
-
-	// Check the connection
-	err = client.Ping(ctx, nil)
-
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoURI))
 	if err != nil {
 		log.Fatal(err)
 		return 0, err
 	}
 
 	fmt.Println("Connected to MongoDB!")
+
+	db := client.Database("storage-service")
+
+	productsCollection := db.Collection("products")
+
+	cursor, err := productsCollection.Find(
+		ctx,
+		bson.D{{"id", productId}},
+	)
+	var product Product
+	for cursor.Next(ctx) {
+		if err := cursor.Decode(&product); err != nil {
+			log.Fatal(err)
+		}
+		p, _ := json.MarshalIndent(product, "", "\t")
+		fmt.Println(string(p))
+	}
+
+	client.Disconnect(ctx)
+	if err != nil {
+		return -1, err
+	}
+
+	fmt.Println("Disconnected from MongoDB!")
+	return product.Units, nil
+}
+
+func PingMongo(ctx context.Context) (int, error) {
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoURI))
+	if err != nil {
+		log.Fatal(err)
+		return 0, err
+	}
+
+	err = client.Ping(ctx, nil)
+	if err != nil {
+		log.Fatal(err)
+		return 0, err
+	}
+
+	fmt.Println("Connected to MongoDB!")
+
+	client.Disconnect(ctx)
+	if err != nil {
+		return -1, err
+	}
+
+	fmt.Println("Disconnected from MongoDB!")
 	return 1, nil
-}
-
-func PrintCurrentTime(ctx context.Context) error {
-	loc, err := time.LoadLocation("Asia/Tokyo")
-
-	if err != nil {
-		fmt.Printf("err: %v\n", err)
-		return err
-	}
-
-	tokyoTime := time.Now().In(loc)
-
-	fmt.Printf("tokyoTime: %v\n", tokyoTime)
-
-	loc, err = time.LoadLocation("America/Sao_Paulo")
-
-	if err != nil {
-		fmt.Printf("err: %v\n", err)
-		return err
-	}
-
-	saoPauloTime := time.Now().In(loc)
-	fmt.Printf("saoPauloTime: %v\n", saoPauloTime)
-
-	return nil
-}
-
-func ActivityA(data string) (string, error) {
-	return data + " antigo", nil
-}
-
-func ActivityB(data string) (string, error) {
-	return data + " + final", nil
-}
-
-func ActivityC(data string) (string, error) {
-	return data + " novo", nil
 }

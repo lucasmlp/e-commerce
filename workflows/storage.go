@@ -21,7 +21,7 @@ func RunStorage(ctx workflow.Context) (string, error) {
 	var units int
 	ctx = workflow.WithActivityOptions(ctx, ao)
 	err := workflow.ExecuteActivity(ctx, activities.GetProductUnits).Get(ctx, &units)
-	if err != nil {
+	if err != nil || units < 0 {
 		return "Failure", err
 	}
 
