@@ -29,7 +29,7 @@ func main() {
 		panic(err)
 	}
 
-	workflow.RegisterWithOptions(workflows.RunOrder, workflow.RegisterOptions{
+	workflow.RegisterWithOptions(workflows.RunStorage, workflow.RegisterOptions{
 		Name: "RunStorage",
 	})
 

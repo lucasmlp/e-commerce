@@ -27,7 +27,7 @@ cadence-worker:
 	@ echo
 	@ go run ./worker/main.go
 
-run-order:
+order:
 	@ go run ./trigger/main.go RunOrder
 
 storage-check-reservation-finished:

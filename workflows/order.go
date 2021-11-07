@@ -56,6 +56,20 @@ func handleStorageCheckAndReservation(ctx workflow.Context) error {
 
 	logger.Info("started to check storage and reserve product(s)")
 
+	cwo := workflow.ChildWorkflowOptions{
+		// Do not specify WorkflowID if you want Cadence to generate a unique ID for the child execution.
+		WorkflowID:                   uuid.New(),
+		ExecutionStartToCloseTimeout: time.Minute * 30,
+	}
+	ctx = workflow.WithChildOptions(ctx, cwo)
+
+	var result string
+	future := workflow.ExecuteChildWorkflow(ctx, RunStorage)
+	if err := future.Get(ctx, &result); err != nil {
+		workflow.GetLogger(ctx).Error("SimpleChildWorkflow failed.", zap.Error(err))
+		return err
+	}
+
 	signalName := "storage-check-reservation-finished"
 
 	err := handleStandardSignal(ctx, signalName, "recieved storage-check-reservation-finished signal", "failed to check storage and reserve product(s)")

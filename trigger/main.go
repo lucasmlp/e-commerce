@@ -8,6 +8,7 @@ import (
 
 	"github.com/machado-br/order-service/helpers"
 	"github.com/machado-br/order-service/workflows"
+
 	"github.com/pborman/uuid"
 	"go.uber.org/cadence/client"
 )
