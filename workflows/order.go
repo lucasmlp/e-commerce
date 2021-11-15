@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/machado-br/order-service/activities"
+	entities "github.com/machado-br/order-service/entities"
 	"github.com/pborman/uuid"
 	"go.uber.org/cadence/workflow"
 	"go.uber.org/zap"
@@ -14,13 +15,6 @@ const (
 	standardStepTimeout          = 90 * time.Second
 	standardChildWorkflowTimeout = 30 * time.Second
 )
-
-type Order struct {
-	Id        string
-	UserId    string
-	ProductId string
-	Quantity  int
-}
 
 func RunOrder(ctx workflow.Context, orderId string) error {
 	logger := buildOrderWorkflowLogger(ctx, orderId)
@@ -32,7 +26,7 @@ func RunOrder(ctx workflow.Context, orderId string) error {
 		ScheduleToStartTimeout: time.Second * 30,
 	}
 
-	var order Order
+	var order entities.Order
 	var err error
 
 	ctx = workflow.WithActivityOptions(ctx, ao)
@@ -41,17 +35,17 @@ func RunOrder(ctx workflow.Context, orderId string) error {
 		return err
 	}
 
-	err = handleStorageCheckAndReservation(ctx, order.ProductId, order.Quantity)
+	product, err := handleStorageCheckAndReservation(ctx, order.ProductId, order.Quantity)
 	if err != nil {
 		return err
 	}
 
-	err = handlePaymentProcess(ctx, order.Id, order.UserId, 25999.96)
+	err = handlePaymentProcess(ctx, order.Id, order.UserId, product.Price*float64(order.Quantity))
 	if err != nil {
 		return err
 	}
 
-	err = handleShipment(ctx, order.Id, "Rua Dona Queridinha, 180, Itapoã, Belo Horizonte, Minas Gerais, Brasil")
+	err = handleShipment(ctx, order.Id, order.DeliveryAddress)
 	if err != nil {
 		return err
 	}
@@ -71,7 +65,7 @@ func buildOrderWorkflowLogger(ctx workflow.Context, orderId string) *zap.Logger 
 	return logger
 }
 
-func handleStorageCheckAndReservation(ctx workflow.Context, productId string, quantity int) error {
+func handleStorageCheckAndReservation(ctx workflow.Context, productId string, quantity int) (entities.Product, error) {
 	logger := workflow.GetLogger(ctx)
 
 	logger.Info("started to check storage and reserve product(s)")
@@ -82,14 +76,14 @@ func handleStorageCheckAndReservation(ctx workflow.Context, productId string, qu
 	}
 	ctx = workflow.WithChildOptions(ctx, cwo)
 
-	var result string
+	var product entities.Product
 	future := workflow.ExecuteChildWorkflow(ctx, RunStorage, productId, quantity)
-	if err := future.Get(ctx, &result); err != nil {
+	if err := future.Get(ctx, &product); err != nil {
 		workflow.GetLogger(ctx).Error("SimpleChildWorkflow failed.", zap.Error(err))
-		return err
+		return entities.Product{}, err
 	}
 
-	return nil
+	return product, nil
 }
 
 func handlePaymentProcess(ctx workflow.Context, orderId string, userId string, orderValue float64) error {

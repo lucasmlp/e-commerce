@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 
+	entities "github.com/machado-br/order-service/entities"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -16,25 +17,11 @@ const (
 	productId = "49f2cea1-7648-4e88-947f-0b8db5cb845a"
 )
 
-type Product struct {
-	Id    string
-	Name  string
-	Units int
-	Price float64
-}
-
-type Order struct {
-	Id        string
-	UserId    string
-	ProductId string
-	Quantity  int
-}
-
-func GetOrder(ctx context.Context, orderId string) (Order, error) {
+func GetOrder(ctx context.Context, orderId string) (entities.Order, error) {
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoURI))
 	if err != nil {
 		log.Fatal(err)
-		return Order{}, err
+		return entities.Order{}, err
 	}
 
 	db := client.Database("order-service")
@@ -45,7 +32,7 @@ func GetOrder(ctx context.Context, orderId string) (Order, error) {
 		bson.D{{"id", orderId}},
 	)
 
-	var order Order
+	var order entities.Order
 	for cursor.Next(ctx) {
 		if err := cursor.Decode(&order); err != nil {
 			log.Fatal(err)
@@ -56,21 +43,18 @@ func GetOrder(ctx context.Context, orderId string) (Order, error) {
 
 	client.Disconnect(ctx)
 	if err != nil {
-		return Order{}, err
+		return entities.Order{}, err
 	}
 
-	fmt.Println("Disconnected from MongoDB!")
 	return order, nil
 }
 
-func GetProductUnits(ctx context.Context) (int, error) {
+func GetProduct(ctx context.Context) (entities.Product, error) {
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoURI))
 	if err != nil {
 		log.Fatal(err)
-		return 0, err
+		return entities.Product{}, err
 	}
-
-	fmt.Println("Connected to MongoDB!")
 
 	db := client.Database("storage-service")
 
@@ -80,7 +64,7 @@ func GetProductUnits(ctx context.Context) (int, error) {
 		ctx,
 		bson.D{{"id", productId}},
 	)
-	var product Product
+	var product entities.Product
 	for cursor.Next(ctx) {
 		if err := cursor.Decode(&product); err != nil {
 			log.Fatal(err)
@@ -91,11 +75,10 @@ func GetProductUnits(ctx context.Context) (int, error) {
 
 	client.Disconnect(ctx)
 	if err != nil {
-		return -1, err
+		return entities.Product{}, err
 	}
 
-	fmt.Println("Disconnected from MongoDB!")
-	return product.Units, nil
+	return product, nil
 }
 
 func PingMongo(ctx context.Context) (int, error) {
