@@ -9,7 +9,6 @@ import (
 	"github.com/machado-br/order-service/helpers"
 	"github.com/machado-br/order-service/workflows"
 
-	"github.com/pborman/uuid"
 	"go.uber.org/cadence/client"
 )
 
@@ -27,15 +26,19 @@ func main() {
 
 	triggerClient := helpers.NewCadenceClient(workflowClient)
 
-	workflowID := uuid.New()
-
 	switch name := action; name {
 	case "RunOrder":
+		orderId := "543dc1a5-bf19-49f1-93de-89bb3bf3785f"
+		userId := "462cf3f0-c1db-4d0c-b70d-483b35f441d1"
+		workflowId := orderId + ":" + userId
+
 		_, err = triggerClient.StartWorkflow(context.Background(), client.StartWorkflowOptions{
-			ID:                           workflowID,
+			ID:                           workflowId,
 			TaskList:                     "order-tasklist",
 			ExecutionStartToCloseTimeout: 5 * time.Minute,
-		}, workflows.RunOrder)
+		}, workflows.RunOrder, orderId)
+
+		fmt.Println("Started order workflow. Order ID: ", orderId)
 	case "StorageCheckReservationFinished":
 		err = triggerClient.SignalWorkflow(context.Background(), os.Args[2], "", "storage-check-reservation-finished", "Success")
 	case "PaymentFinished":
@@ -48,6 +51,4 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Println("Started Action: ", workflowID)
-	fmt.Println("Action: ", action)
 }

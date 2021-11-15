@@ -40,6 +40,7 @@ func main() {
 	})
 
 	activity.Register(activities.GetProductUnits)
+	activity.Register(activities.GetOrder)
 
 	w := worker.New(workflowClient, domainName, "order-tasklist",
 		worker.Options{

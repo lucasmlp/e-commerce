@@ -4,6 +4,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/machado-br/order-service/activities"
 	"github.com/pborman/uuid"
 	"go.uber.org/cadence/workflow"
 	"go.uber.org/zap"
@@ -14,13 +15,33 @@ const (
 	standardChildWorkflowTimeout = 30 * time.Second
 )
 
-func RunOrder(ctx workflow.Context) error {
-	logger := buildOrderWorkflowLogger(ctx, uuid.New(), "10568246624")
+type Order struct {
+	Id        string
+	UserId    string
+	ProductId string
+	Quantity  int
+}
+
+func RunOrder(ctx workflow.Context, orderId string) error {
+	logger := buildOrderWorkflowLogger(ctx, orderId)
 
 	logger.Info("order workflow started")
+
+	ao := workflow.ActivityOptions{
+		StartToCloseTimeout:    time.Second * 5,
+		ScheduleToStartTimeout: time.Second * 30,
+	}
+
+	var order Order
 	var err error
 
-	err = handleStorageCheckAndReservation(ctx)
+	ctx = workflow.WithActivityOptions(ctx, ao)
+	err = workflow.ExecuteActivity(ctx, activities.GetOrder, orderId).Get(ctx, &order)
+	if err != nil {
+		return err
+	}
+
+	err = handleStorageCheckAndReservation(ctx, order.ProductId, order.Quantity)
 	if err != nil {
 		return err
 	}
@@ -40,42 +61,34 @@ func RunOrder(ctx workflow.Context) error {
 	return nil
 }
 
-func buildOrderWorkflowLogger(ctx workflow.Context, orderID string, reference string) *zap.Logger {
+func buildOrderWorkflowLogger(ctx workflow.Context, orderId string) *zap.Logger {
 	logger := workflow.GetLogger(ctx)
 	workflowInfo := workflow.GetInfo(ctx)
 
 	logger = logger.With(zap.String("WorkflowID", workflowInfo.WorkflowExecution.ID))
-	logger = logger.With(zap.String("OrderID", orderID))
-	logger = logger.With(zap.String("Reference", reference))
+	logger = logger.With(zap.String("OrderID", orderId))
 
 	return logger
 }
 
-func handleStorageCheckAndReservation(ctx workflow.Context) error {
+func handleStorageCheckAndReservation(ctx workflow.Context, productId string, quantity int) error {
 	logger := workflow.GetLogger(ctx)
 
 	logger.Info("started to check storage and reserve product(s)")
 
 	cwo := workflow.ChildWorkflowOptions{
-		// Do not specify WorkflowID if you want Cadence to generate a unique ID for the child execution.
 		WorkflowID:                   uuid.New(),
 		ExecutionStartToCloseTimeout: time.Minute * 2,
 	}
 	ctx = workflow.WithChildOptions(ctx, cwo)
 
 	var result string
-	future := workflow.ExecuteChildWorkflow(ctx, RunStorage)
+	future := workflow.ExecuteChildWorkflow(ctx, RunStorage, productId, quantity)
 	if err := future.Get(ctx, &result); err != nil {
 		workflow.GetLogger(ctx).Error("SimpleChildWorkflow failed.", zap.Error(err))
 		return err
 	}
 
-	signalName := "storage-check-reservation-finished"
-
-	err := handleStandardSignal(ctx, signalName, "recieved storage-check-reservation-finished signal", "failed to check storage and reserve product(s)")
-	if err != nil {
-		return err
-	}
 	return nil
 }
 

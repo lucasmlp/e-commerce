@@ -20,6 +20,47 @@ type Product struct {
 	Id    string
 	Name  string
 	Units int
+	Price float64
+}
+
+type Order struct {
+	Id        string
+	UserId    string
+	ProductId string
+	Quantity  int
+}
+
+func GetOrder(ctx context.Context, orderId string) (Order, error) {
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoURI))
+	if err != nil {
+		log.Fatal(err)
+		return Order{}, err
+	}
+
+	db := client.Database("order-service")
+	productsCollection := db.Collection("orders")
+
+	cursor, err := productsCollection.Find(
+		ctx,
+		bson.D{{"id", orderId}},
+	)
+
+	var order Order
+	for cursor.Next(ctx) {
+		if err := cursor.Decode(&order); err != nil {
+			log.Fatal(err)
+		}
+		p, _ := json.MarshalIndent(order, "", "\t")
+		fmt.Println(string(p))
+	}
+
+	client.Disconnect(ctx)
+	if err != nil {
+		return Order{}, err
+	}
+
+	fmt.Println("Disconnected from MongoDB!")
+	return order, nil
 }
 
 func GetProductUnits(ctx context.Context) (int, error) {

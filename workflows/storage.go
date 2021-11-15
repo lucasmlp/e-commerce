@@ -7,7 +7,7 @@ import (
 	"go.uber.org/cadence/workflow"
 )
 
-func RunStorage(ctx workflow.Context) (string, error) {
+func RunStorage(ctx workflow.Context, productId string, quantity int) (string, error) {
 	logger := workflow.GetLogger(ctx)
 
 	logger.Info("storage workflow started")
