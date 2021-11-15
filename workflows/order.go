@@ -46,12 +46,12 @@ func RunOrder(ctx workflow.Context, orderId string) error {
 		return err
 	}
 
-	err = handlePaymentProcess(ctx)
+	err = handlePaymentProcess(ctx, order.Id, order.UserId, 25999.96)
 	if err != nil {
 		return err
 	}
 
-	err = handleShipment(ctx)
+	err = handleShipment(ctx, order.Id, "Rua Dona Queridinha, 180, Itapoã, Belo Horizonte, Minas Gerais, Brasil")
 	if err != nil {
 		return err
 	}
@@ -92,29 +92,41 @@ func handleStorageCheckAndReservation(ctx workflow.Context, productId string, qu
 	return nil
 }
 
-func handlePaymentProcess(ctx workflow.Context) error {
+func handlePaymentProcess(ctx workflow.Context, orderId string, userId string, orderValue float64) error {
 	logger := workflow.GetLogger(ctx)
 
 	logger.Info("started to process payment")
 
-	signalName := "payment-finished"
+	cwo := workflow.ChildWorkflowOptions{
+		WorkflowID:                   uuid.New(),
+		ExecutionStartToCloseTimeout: time.Minute * 1,
+	}
+	ctx = workflow.WithChildOptions(ctx, cwo)
 
-	err := handleStandardSignal(ctx, signalName, "recieved payment-finished signal", "failed to process product(s) payment")
-	if err != nil {
+	var result string
+	future := workflow.ExecuteChildWorkflow(ctx, RunPayment, orderId, userId, orderValue)
+	if err := future.Get(ctx, &result); err != nil {
+		workflow.GetLogger(ctx).Error("SimpleChildWorkflow failed.", zap.Error(err))
 		return err
 	}
 	return nil
 }
 
-func handleShipment(ctx workflow.Context) error {
+func handleShipment(ctx workflow.Context, orderId string, orderDeliveryAddress string) error {
 	logger := workflow.GetLogger(ctx)
 
 	logger.Info("shipment process started")
 
-	signalName := "shipment-finished"
+	cwo := workflow.ChildWorkflowOptions{
+		WorkflowID:                   uuid.New(),
+		ExecutionStartToCloseTimeout: time.Minute * 1,
+	}
+	ctx = workflow.WithChildOptions(ctx, cwo)
 
-	err := handleStandardSignal(ctx, signalName, "recieved shipment-finished signal", "failed to process product(s) shipment")
-	if err != nil {
+	var result string
+	future := workflow.ExecuteChildWorkflow(ctx, RunShipment, orderId, orderDeliveryAddress)
+	if err := future.Get(ctx, &result); err != nil {
+		workflow.GetLogger(ctx).Error("SimpleChildWorkflow failed.", zap.Error(err))
 		return err
 	}
 	return nil

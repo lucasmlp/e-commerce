@@ -31,12 +31,21 @@ func main() {
 		panic(err)
 	}
 
-	workflow.RegisterWithOptions(workflows.RunStorage, workflow.RegisterOptions{
-		Name: "RunStorage",
-	})
-
 	workflow.RegisterWithOptions(workflows.RunOrder, workflow.RegisterOptions{
-		Name: "RunOrder",
+		EnableShortName: true,
+		Name:            "RunOrder",
+	})
+	workflow.RegisterWithOptions(workflows.RunStorage, workflow.RegisterOptions{
+		EnableShortName: true,
+		Name:            "RunStorage",
+	})
+	workflow.RegisterWithOptions(workflows.RunPayment, workflow.RegisterOptions{
+		EnableShortName: true,
+		Name:            "RunPayment",
+	})
+	workflow.RegisterWithOptions(workflows.RunShipment, workflow.RegisterOptions{
+		EnableShortName: true,
+		Name:            "RunShipment",
 	})
 
 	activity.Register(activities.GetProductUnits)

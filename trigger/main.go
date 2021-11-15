@@ -8,6 +8,7 @@ import (
 
 	"github.com/machado-br/order-service/helpers"
 	"github.com/machado-br/order-service/workflows"
+	"github.com/pborman/uuid"
 
 	"go.uber.org/cadence/client"
 )
@@ -29,7 +30,7 @@ func main() {
 	switch name := action; name {
 	case "RunOrder":
 		orderId := "543dc1a5-bf19-49f1-93de-89bb3bf3785f"
-		userId := "462cf3f0-c1db-4d0c-b70d-483b35f441d1"
+		userId := uuid.New()
 		workflowId := orderId + ":" + userId
 
 		_, err = triggerClient.StartWorkflow(context.Background(), client.StartWorkflowOptions{
