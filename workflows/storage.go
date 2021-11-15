@@ -1,11 +1,14 @@
 package workflows
 
 import (
+	"errors"
+	"strconv"
 	"time"
 
 	"github.com/machado-br/order-service/activities"
 	"github.com/machado-br/order-service/entities"
 	"go.uber.org/cadence/workflow"
+	"go.uber.org/zap"
 )
 
 func RunStorage(ctx workflow.Context, productId string, quantity int) (entities.Product, error) {
@@ -22,11 +25,19 @@ func RunStorage(ctx workflow.Context, productId string, quantity int) (entities.
 	var product entities.Product
 	ctx = workflow.WithActivityOptions(ctx, ao)
 	err := workflow.ExecuteActivity(ctx, activities.GetProduct).Get(ctx, &product)
-	if err != nil || product.Units < 0 {
+	if err != nil {
 		return entities.Product{}, err
 	}
 
-	logger.Info("reservation on product(s) unit(s) started")
+	logger.Info("reservation on product units started")
+
+	if product.Units < 0 || product.Units < quantity {
+		logger.Error("not enough product units",
+			zap.String("product units requested:", strconv.Itoa(quantity)),
+			zap.String("product units available:", strconv.Itoa(product.Units)),
+		)
+		return entities.Product{}, errors.New("not enough product units")
+	}
 
 	logger.Info("storage workflow finished succesfully")
 
