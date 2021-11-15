@@ -79,7 +79,7 @@ func handleStorageCheckAndReservation(ctx workflow.Context, productId string, qu
 	var product entities.Product
 	future := workflow.ExecuteChildWorkflow(ctx, RunStorage, productId, quantity)
 	if err := future.Get(ctx, &product); err != nil {
-		workflow.GetLogger(ctx).Error("SimpleChildWorkflow failed.", zap.Error(err))
+		workflow.GetLogger(ctx).Error("storage workflow failed.", zap.Error(err))
 		return entities.Product{}, err
 	}
 
@@ -100,7 +100,7 @@ func handlePaymentProcess(ctx workflow.Context, orderId string, userId string, o
 	var result string
 	future := workflow.ExecuteChildWorkflow(ctx, RunPayment, orderId, userId, orderValue)
 	if err := future.Get(ctx, &result); err != nil {
-		workflow.GetLogger(ctx).Error("SimpleChildWorkflow failed.", zap.Error(err))
+		workflow.GetLogger(ctx).Error("payment workflow failed.", zap.Error(err))
 		return err
 	}
 	return nil
@@ -120,7 +120,7 @@ func handleShipment(ctx workflow.Context, orderId string, orderDeliveryAddress s
 	var result string
 	future := workflow.ExecuteChildWorkflow(ctx, RunShipment, orderId, orderDeliveryAddress)
 	if err := future.Get(ctx, &result); err != nil {
-		workflow.GetLogger(ctx).Error("SimpleChildWorkflow failed.", zap.Error(err))
+		workflow.GetLogger(ctx).Error("shipment workflow failed.", zap.Error(err))
 		return err
 	}
 	return nil

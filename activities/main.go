@@ -3,8 +3,10 @@ package activities
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
+	"os"
 
 	entities "github.com/machado-br/order-service/entities"
 	"go.mongodb.org/mongo-driver/bson"
@@ -12,17 +14,17 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-const (
-	mongoURI  = "mongodb://localhost:27017"
-	productId = "49f2cea1-7648-4e88-947f-0b8db5cb845a"
-)
-
 func GetOrder(ctx context.Context, orderId string) (entities.Order, error) {
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoURI))
+	client, err := buildMongoclient(ctx)
 	if err != nil {
 		log.Fatal(err)
 		return entities.Order{}, err
 	}
+	defer func() {
+		if err = client.Disconnect(ctx); err != nil {
+			panic(err)
+		}
+	}()
 
 	db := client.Database("order-service")
 	productsCollection := db.Collection("orders")
@@ -41,20 +43,20 @@ func GetOrder(ctx context.Context, orderId string) (entities.Order, error) {
 		fmt.Println(string(p))
 	}
 
-	client.Disconnect(ctx)
-	if err != nil {
-		return entities.Order{}, err
-	}
-
 	return order, nil
 }
 
-func GetProduct(ctx context.Context) (entities.Product, error) {
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoURI))
+func GetProduct(ctx context.Context, productId string) (entities.Product, error) {
+	client, err := buildMongoclient(ctx)
 	if err != nil {
 		log.Fatal(err)
 		return entities.Product{}, err
 	}
+	defer func() {
+		if err = client.Disconnect(ctx); err != nil {
+			panic(err)
+		}
+	}()
 
 	db := client.Database("storage-service")
 
@@ -64,6 +66,10 @@ func GetProduct(ctx context.Context) (entities.Product, error) {
 		ctx,
 		bson.D{{"id", productId}},
 	)
+	if err != nil {
+		return entities.Product{}, err
+	}
+
 	var product entities.Product
 	for cursor.Next(ctx) {
 		if err := cursor.Decode(&product); err != nil {
@@ -73,20 +79,50 @@ func GetProduct(ctx context.Context) (entities.Product, error) {
 		fmt.Println(string(p))
 	}
 
-	client.Disconnect(ctx)
-	if err != nil {
-		return entities.Product{}, err
-	}
-
 	return product, nil
 }
 
-func PingMongo(ctx context.Context) (int, error) {
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoURI))
+func UpdateProductUnits(ctx context.Context, productId string, units int) error {
+
+	client, err := buildMongoclient(ctx)
 	if err != nil {
 		log.Fatal(err)
-		return 0, err
+		return err
 	}
+	defer func() {
+		if err = client.Disconnect(ctx); err != nil {
+			panic(err)
+		}
+	}()
+
+	coll := client.Database("storage-service").Collection("products")
+	filter := bson.D{{"id", productId}}
+	update := bson.D{{"$set", bson.D{{"units", units}}}}
+	result, err := coll.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		println(err)
+		return err
+	}
+
+	if result.ModifiedCount <= 0 {
+		println(result.ModifiedCount)
+		return errors.New("failed to update product units")
+	}
+
+	return nil
+}
+
+func PingMongo(ctx context.Context) (int, error) {
+	client, err := buildMongoclient(ctx)
+	if err != nil {
+		log.Fatal(err)
+		return -1, err
+	}
+	defer func() {
+		if err = client.Disconnect(ctx); err != nil {
+			panic(err)
+		}
+	}()
 
 	err = client.Ping(ctx, nil)
 	if err != nil {
@@ -94,13 +130,18 @@ func PingMongo(ctx context.Context) (int, error) {
 		return 0, err
 	}
 
-	fmt.Println("Connected to MongoDB!")
-
-	client.Disconnect(ctx)
-	if err != nil {
-		return -1, err
-	}
-
-	fmt.Println("Disconnected from MongoDB!")
 	return 1, nil
+}
+
+func buildMongoclient(ctx context.Context) (*mongo.Client, error) {
+	var uri string
+	if uri = os.Getenv("MONGODB_URI"); uri == "" {
+		log.Fatal("You must set your 'MONGODB_URI' environmental variable. See\n\t https://docs.mongodb.com/drivers/go/current/usage-examples/#environment-variable")
+		return nil, errors.New("MongoDB URI not set in env file")
+	}
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
+	if err != nil {
+		return nil, err
+	}
+	return client, nil
 }

@@ -14,7 +14,10 @@ import (
 func RunStorage(ctx workflow.Context, productId string, quantity int) (entities.Product, error) {
 	logger := workflow.GetLogger(ctx)
 
-	logger.Info("storage workflow started")
+	logger.Info("storage workflow started",
+		zap.String("ProductId:", productId),
+		zap.String("Quantity:", strconv.Itoa(quantity)),
+	)
 
 	logger.Info("check storage availability started")
 	ao := workflow.ActivityOptions{
@@ -24,7 +27,7 @@ func RunStorage(ctx workflow.Context, productId string, quantity int) (entities.
 
 	var product entities.Product
 	ctx = workflow.WithActivityOptions(ctx, ao)
-	err := workflow.ExecuteActivity(ctx, activities.GetProduct).Get(ctx, &product)
+	err := workflow.ExecuteActivity(ctx, activities.GetProduct, productId).Get(ctx, &product)
 	if err != nil {
 		return entities.Product{}, err
 	}
@@ -36,7 +39,14 @@ func RunStorage(ctx workflow.Context, productId string, quantity int) (entities.
 			zap.String("product units requested:", strconv.Itoa(quantity)),
 			zap.String("product units available:", strconv.Itoa(product.Units)),
 		)
+
 		return entities.Product{}, errors.New("not enough product units")
+	} else {
+		var result string
+		err := workflow.ExecuteActivity(ctx, activities.UpdateProductUnits, productId, product.Units-quantity).Get(ctx, &result)
+		if err != nil {
+			return entities.Product{}, err
+		}
 	}
 
 	logger.Info("storage workflow finished succesfully")

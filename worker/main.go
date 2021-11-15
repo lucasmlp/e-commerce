@@ -48,8 +48,9 @@ func main() {
 		Name:            "RunShipment",
 	})
 
-	activity.Register(activities.GetProduct)
 	activity.Register(activities.GetOrder)
+	activity.Register(activities.GetProduct)
+	activity.Register(activities.UpdateProductUnits)
 
 	w := worker.New(workflowClient, domainName, "order-tasklist",
 		worker.Options{
