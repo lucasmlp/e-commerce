@@ -44,3 +44,6 @@ payment-finished:
 
 shipment-finished:
 	@ go run ./trigger/main.go ShipmentFinished $(filter-out $@,$(MAKECMDGOALS))
+	
+connect:
+	@ kubectl proxy --port=9874 &
