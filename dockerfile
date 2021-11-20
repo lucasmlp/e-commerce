@@ -17,7 +17,7 @@ FROM builder_base as builder
 COPY . /order_service
 WORKDIR /order_service
 
-RUN go build -a -installsuffix cgo -o workflowworker order-service/cmd/workflowworker
+RUN go build -a -installsuffix cgo -o workflowworker ./cmd/workflowworker
 
 # STAGE 2: Build Workflow Worker
 FROM alpine as workflowworker
