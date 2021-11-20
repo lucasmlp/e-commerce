@@ -9,7 +9,7 @@ metadata:
 spec:
   containers:
   - name: ephemeral-cadence-server
-    image: ubercadence/server:0.21.3
+    image: ubercadence/server:0.22.3
     command:
       - "sleep"
       - "604800"

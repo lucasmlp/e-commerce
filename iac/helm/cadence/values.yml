@@ -1,0 +1,143 @@
+server:
+  image:
+    repository: ubercadence/server
+    tag: 0.22.3
+
+  metrics:
+    annotations:
+      enabled: true
+
+  frontend:
+    replicaCount: 1
+#    resources:
+#      requests:
+#        memory: 2Gi
+#        cpu: 2
+#      limits:
+#        memory: 4Gi
+#        cpu: 4
+    nodeSelector:
+      cloud.google.com/gke-nodepool: cadence-frontend
+    tolerations:
+    - key: "node-pool"
+      operator: "Equal"
+      value: "cadence-frontend"
+      effect: "NoSchedule"
+
+  history:
+    replicaCount: 1
+#    resources:
+#      requests:
+#        cpu: 4
+#        memory: 4Gi
+#      limits:
+#        cpu: 4
+#        memory: 8Gi
+    nodeSelector:
+      cloud.google.com/gke-nodepool: cadence-history
+
+    tolerations:
+    - key: "node-pool"
+      operator: "Equal"
+      value: "cadence-history"
+      effect: "NoSchedule"
+
+  matching:
+    replicaCount: 1
+#    resources:
+#      requests:
+#        cpu: 2
+#        memory: 2Gi
+#      limits:
+#        cpu: 4
+#        memory: 4Gi
+    nodeSelector:
+      cloud.google.com/gke-nodepool: cadence-matching
+
+    tolerations:
+    - key: "node-pool"
+      operator: "Equal"
+      value: "cadence-matching"
+      effect: "NoSchedule"
+
+  worker:
+    replicaCount: 1
+#    resources:
+#      requests:
+#        cpu: 2
+#        memory: 2Gi
+#      limits:
+#        cpu: 2
+#        memory: 4Gi
+    nodeSelector:
+      cloud.google.com/gke-nodepool: cadence-worker
+    tolerations:
+    - key: "node-pool"
+      operator: "Equal"
+      value: "cadence-worker"
+      effect: "NoSchedule"
+
+  config:
+    numHistoryShards: 16000
+    clusterMetadata:
+      enableGlobalDomains: true
+
+    persistence:
+      default:
+        driver: "cassandra"
+        cassandra:
+          hosts: "cassandra-0.cassandra"
+          port: 9042
+          keyspace: cadence
+          consistency: One
+
+      visibility:
+        driver: "cassandra"
+        cassandra:
+          hosts: "cassandra-0.cassandra"
+          port: 9042
+          keyspace: cadence_visibility
+          consistency: One  
+
+web:
+  replicaCount: 1
+  image:
+    repository: ubercadence/web
+    tag: v3.28.7
+
+schema:
+  setup:
+    enabled: false
+
+  update:
+    enabled: false
+
+cassandra:
+  enabled: false
+
+mysql:
+  enabled: false
+
+dynamicConfig:
+  pollInterval: "10s"
+  values:
+    matching.numTasklistWritePartitions:
+      - value: 15
+        constraints:
+          domainName: "journey-service"
+          taskListName: "general"
+
+    matching.numTasklistReadPartitions:
+      - value: 15
+        constraints:
+          domainName: "journey-service"
+          taskListName: "general"
+
+    history.rps:
+      - value: 12000
+
+    matching.rps:
+      - value: 12000
+
+    history.cacheMaxSize:
+      - value: 128
