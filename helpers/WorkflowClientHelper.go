@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"errors"
+	"os"
 
 	"go.uber.org/cadence/.gen/go/cadence/workflowserviceclient"
 	"go.uber.org/yarpc"
@@ -9,14 +10,18 @@ import (
 )
 
 func NewWorkflowClient(serviceNameCadenceClient string, serviceNameCadenceFrontend string) (workflowserviceclient.Interface, error) {
+
+	cadenceHostAddressAndPort := os.Getenv("CADENCE_HOST_ADDRESS_AND_PORT")
+
 	ch, err := tchannel.NewChannelTransport(tchannel.ServiceName(serviceNameCadenceClient))
 	if err != nil {
 		return nil, err
 	}
+
 	dispatcher := yarpc.NewDispatcher(yarpc.Config{
 		Name: serviceNameCadenceClient,
 		Outbounds: yarpc.Outbounds{
-			serviceNameCadenceFrontend: {Unary: ch.NewSingleOutbound("127.0.0.1:7933")},
+			serviceNameCadenceFrontend: {Unary: ch.NewSingleOutbound(cadenceHostAddressAndPort)},
 		},
 	})
 

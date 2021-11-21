@@ -7,7 +7,7 @@ gcloud beta container --project "e-commerce-2021-11" clusters create "cluster" -
      --addons HorizontalPodAutoscaling,HttpLoadBalancing,GcePersistentDiskCsiDriver --enable-autoupgrade --enable-autorepair\
      --max-surge-upgrade 1 --max-unavailable-upgrade 0 --enable-shielded-nodes --node-locations "us-east1-b"
 
-     gcloud beta container --project "e-commerce-2021-11" node-pools create "cadence-cassandra" --cluster "cluster" --zone "us-east1-b" --machine-type "e2-small" --image-type "COS_CONTAINERD"\
+     gcloud beta container --project "e-commerce-2021-11" node-pools create "cadence-cassandra" --cluster "cluster" --zone "us-east1-b" --machine-type "e2-standard-2" --image-type "COS_CONTAINERD"\
      --disk-type "pd-standard" --disk-size "100" --metadata disable-legacy-endpoints=true\
      --num-nodes "1" --enable-autoupgrade --enable-autorepair --max-surge-upgrade 1 --max-unavailable-upgrade 0 --max-pods-per-node "110" --node-locations "us-east1-b"
 
@@ -27,6 +27,6 @@ gcloud beta container --project "e-commerce-2021-11" clusters create "cluster" -
      --disk-type "pd-standard" --disk-size "100" --metadata disable-legacy-endpoints=true\
      --num-nodes "1" --enable-autoupgrade --enable-autorepair --max-surge-upgrade 1 --max-unavailable-upgrade 0 --max-pods-per-node "110" --node-locations "us-east1-b"
 
-      gcloud beta container --project "e-commerce-2021-11" node-pools create "cadence-web" --cluster "cluster" --zone "us-east1-b" --machine-type "e2-small" --image-type "COS_CONTAINERD"\
-      --disk-type "pd-standard" --disk-size "100" --metadata disable-legacy-endpoints=true\
-       --num-nodes "1" --enable-autoupgrade --enable-autorepair --max-surge-upgrade 1 --max-unavailable-upgrade 0 --max-pods-per-node "110" --node-locations "us-east1-b"
+     gcloud beta container --project "e-commerce-2021-11" node-pools create "cadence-web" --cluster "cluster" --zone "us-east1-b" --machine-type "e2-small" --image-type "COS_CONTAINERD"\
+     --disk-type "pd-standard" --disk-size "100" --metadata disable-legacy-endpoints=true\
+     --num-nodes "1" --enable-autoupgrade --enable-autorepair --max-surge-upgrade 1 --max-unavailable-upgrade 0 --max-pods-per-node "110" --node-locations "us-east1-b"
