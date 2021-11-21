@@ -5,3 +5,7 @@ provider "kubernetes" {
 module "cassandra" {
   source = "./cassandra"
 }
+
+module "workflow-worker" {
+  source = "./workflowworker"
+}

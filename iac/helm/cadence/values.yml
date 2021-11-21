@@ -9,13 +9,13 @@ server:
 
   frontend:
     replicaCount: 1
-#    resources:
-#      requests:
-#        memory: 2Gi
-#        cpu: 2
-#      limits:
-#        memory: 4Gi
-#        cpu: 4
+   resources:
+     requests:
+       cpu: 2
+       memory: 2Gi
+     limits:
+       cpu: 4
+       memory: 4Gi
     nodeSelector:
       cloud.google.com/gke-nodepool: cadence-frontend
     tolerations:
@@ -26,13 +26,13 @@ server:
 
   history:
     replicaCount: 1
-#    resources:
-#      requests:
-#        cpu: 4
-#        memory: 4Gi
-#      limits:
-#        cpu: 4
-#        memory: 8Gi
+   resources:
+     requests:
+       cpu: 4
+       memory: 4Gi
+     limits:
+       cpu: 4
+       memory: 8Gi
     nodeSelector:
       cloud.google.com/gke-nodepool: cadence-history
 
@@ -44,13 +44,13 @@ server:
 
   matching:
     replicaCount: 1
-#    resources:
-#      requests:
-#        cpu: 2
-#        memory: 2Gi
-#      limits:
-#        cpu: 4
-#        memory: 4Gi
+   resources:
+     requests:
+       cpu: 2
+       memory: 2Gi
+     limits:
+       cpu: 4
+       memory: 4Gi
     nodeSelector:
       cloud.google.com/gke-nodepool: cadence-matching
 
@@ -62,13 +62,13 @@ server:
 
   worker:
     replicaCount: 1
-#    resources:
-#      requests:
-#        cpu: 2
-#        memory: 2Gi
-#      limits:
-#        cpu: 2
-#        memory: 4Gi
+   resources:
+     requests:
+       cpu: 2
+       memory: 2Gi
+     limits:
+       cpu: 2
+       memory: 4Gi
     nodeSelector:
       cloud.google.com/gke-nodepool: cadence-worker
     tolerations:
