@@ -3,17 +3,11 @@ export $(shell sed 's/=.*//' .env)
 
 GOPATH=$(shell go env GOPATH)
 
-deps:
+server:
 	@ echo
-	@ echo "Downloading dependencies..."
+	@ echo "Starting the API..."
 	@ echo
-	@ go get -v ./...
-
-update-deps:
-	@ echo
-	@ echo "Updating dependencies..."
-	@ echo
-	@ go get -u ./...
+	@ go run ./cmd/api/main.go
 
 cadence-containers:
 	@ echo
@@ -23,7 +17,7 @@ cadence-containers:
 
 database:
 	@ echo
-	@ echo "Starting Cassandra Cadence and Cadence Web..."
+	@ echo "Starting Mongo..."
 	@ echo
 	docker-compose up -d mongodb
 
