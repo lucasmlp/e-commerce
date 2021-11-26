@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/machado-br/order-service/activities"
-	"github.com/machado-br/order-service/entities"
+	"github.com/machado-br/order-service/cadence/activities"
+	"github.com/machado-br/order-service/domain/entities"
 	"go.uber.org/cadence/workflow"
 	"go.uber.org/zap"
 )

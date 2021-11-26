@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/machado-br/order-service/activities"
-	"github.com/machado-br/order-service/helpers"
-	"github.com/machado-br/order-service/workflows"
+	"github.com/machado-br/order-service/cadence/activities"
+	"github.com/machado-br/order-service/cadence/helpers"
+	"github.com/machado-br/order-service/cadence/workflows"
 
 	"go.uber.org/cadence/activity"
 	"go.uber.org/cadence/worker"

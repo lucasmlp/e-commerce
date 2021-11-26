@@ -3,6 +3,7 @@ module github.com/machado-br/order-service
 go 1.17
 
 require (
+	github.com/gin-gonic/gin v1.7.7
 	github.com/pborman/uuid v1.2.1
 	go.mongodb.org/mongo-driver v1.7.4
 	go.uber.org/cadence v0.18.5
@@ -20,7 +21,6 @@ require (
 	github.com/facebookgo/clock v0.0.0-20150410010913-600d898af40a // indirect
 	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
-	github.com/gin-gonic/gin v1.7.7 // indirect
 	github.com/go-playground/locales v0.13.0 // indirect
 	github.com/go-playground/universal-translator v0.17.0 // indirect
 	github.com/go-playground/validator/v10 v10.4.1 // indirect

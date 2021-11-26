@@ -6,8 +6,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/machado-br/order-service/helpers"
-	"github.com/machado-br/order-service/workflows"
+	"github.com/machado-br/order-service/cadence/helpers"
+	"github.com/machado-br/order-service/cadence/workflows"
 	"github.com/pborman/uuid"
 
 	"go.uber.org/cadence/client"

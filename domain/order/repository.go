@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/machado-br/order-service/entities"
+	"github.com/machado-br/order-service/domain/entities"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"

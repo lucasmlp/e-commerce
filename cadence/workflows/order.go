@@ -4,8 +4,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/machado-br/order-service/activities"
-	entities "github.com/machado-br/order-service/entities"
+	"github.com/machado-br/order-service/cadence/activities"
+	entities "github.com/machado-br/order-service/domain/entities"
 	"github.com/pborman/uuid"
 	"go.uber.org/cadence/workflow"
 	"go.uber.org/zap"

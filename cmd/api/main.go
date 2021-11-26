@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/machado-br/order-service/domain/entities"
 	orders "github.com/machado-br/order-service/domain/order"
-	"github.com/machado-br/order-service/entities"
 )
 
 func main() {

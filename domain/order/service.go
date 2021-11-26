@@ -3,7 +3,7 @@ package orders
 import (
 	"context"
 
-	"github.com/machado-br/order-service/entities"
+	"github.com/machado-br/order-service/domain/entities"
 )
 
 func GetOrders(ctx context.Context) ([]entities.Order, error) {
