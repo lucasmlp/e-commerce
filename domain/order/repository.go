@@ -2,6 +2,7 @@ package orders
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -27,6 +28,8 @@ func buildMongoclient(ctx context.Context) (*mongo.Client, error) {
 }
 
 func GetAll(ctx context.Context) ([]entities.Order, error) {
+	fmt.Println("repository.getAll")
+
 	client, err := buildMongoclient(ctx)
 	if err != nil {
 		log.Fatal(err)
@@ -52,14 +55,51 @@ func GetAll(ctx context.Context) ([]entities.Order, error) {
 			log.Fatal(err)
 		}
 		orders = append(orders, order)
-		// p, _ := json.MarshalIndent(order, "", "\t")
-		// fmt.Println(string(p))
+		p, _ := json.MarshalIndent(order, "", "\t")
+		fmt.Println(string(p))
 	}
 
 	return orders, nil
 }
 
+func Get(ctx context.Context, orderId string) (entities.Order, error) {
+	fmt.Println("repository.get")
+	client, err := buildMongoclient(ctx)
+	if err != nil {
+		log.Fatal(err)
+		return entities.Order{}, err
+	}
+	defer func() {
+		if err = client.Disconnect(ctx); err != nil {
+			panic(err)
+		}
+	}()
+
+	db := client.Database("order-service")
+	productsCollection := db.Collection("orders")
+
+	cursor, err := productsCollection.Find(
+		ctx,
+		bson.D{{"id", orderId}},
+	)
+
+	var order entities.Order
+	for cursor.Next(ctx) {
+		if err := cursor.Decode(&order); err != nil {
+			log.Fatal(err)
+		}
+		p, _ := json.MarshalIndent(order, "", "\t")
+		fmt.Println(string(p))
+	}
+
+	fmt.Printf("order: %v\n", order)
+
+	return order, nil
+}
+
 func Create(ctx context.Context, order entities.Order) (string, error) {
+	fmt.Println("service.create")
+
 	client, err := buildMongoclient(ctx)
 	if err != nil {
 		log.Fatal(err)
@@ -82,6 +122,68 @@ func Create(ctx context.Context, order entities.Order) (string, error) {
 	result, err := orderCollection.InsertOne(ctx, doc)
 	if err != nil {
 		panic(err)
+	}
+
+	fmt.Printf("result: %v\n", result)
+
+	return "", nil
+}
+
+func Delete(ctx context.Context, orderId string) error {
+	fmt.Println("repository.delete")
+
+	client, err := buildMongoclient(ctx)
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+	defer func() {
+		if err = client.Disconnect(ctx); err != nil {
+			panic(err)
+		}
+	}()
+
+	db := client.Database("order-service")
+	orderCollection := db.Collection("orders")
+
+	filter := bson.D{{"id", orderId}}
+	result, err := orderCollection.DeleteOne(ctx, filter)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("result: %v\n", result)
+
+	return nil
+}
+
+func Update(ctx context.Context, order entities.Order) (string, error) {
+	fmt.Println("service.update")
+
+	client, err := buildMongoclient(ctx)
+	if err != nil {
+		log.Fatal(err)
+		return "", err
+	}
+	defer func() {
+		if err = client.Disconnect(ctx); err != nil {
+			panic(err)
+		}
+	}()
+
+	db := client.Database("order-service")
+	orderCollection := db.Collection("orders")
+
+	doc, err := bson.Marshal(order)
+	if err != nil {
+		return "", err
+	}
+	filter := bson.D{{"id", order.Id}}
+
+	result, err := orderCollection.UpdateOne(ctx, doc, filter)
+	if err != nil {
+		fmt.Printf("err: %v\n", err)
+		return "", err
 	}
 
 	fmt.Printf("result: %v\n", result)
