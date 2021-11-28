@@ -79,6 +79,8 @@ func UpdateOrder(ctx context.Context, order dtos.Order) (string, error) {
 		return "", err
 	}
 
+	fmt.Printf("orderEntity: %v\n", orderEntity)
+
 	entity, err := mapToEntity(ctx, order)
 	if err != nil {
 		return "", err

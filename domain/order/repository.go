@@ -181,14 +181,13 @@ func Update(ctx context.Context, order entities.Order) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	filter := bson.M{"$_id": order.Id}
+	filter := bson.M{"_id": order.Id}
 
-	result, err := orderCollection.UpdateOne(ctx, doc, filter)
+	result, err := orderCollection.ReplaceOne(ctx, filter, doc)
 	if err != nil {
 		fmt.Printf("err: %v\n", err)
 		return "", err
 	}
-
 	fmt.Printf("result: %v\n", result)
 
 	return "", nil
