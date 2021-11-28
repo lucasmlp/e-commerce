@@ -1,9 +1,11 @@
-package orders
+package product
 
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
+	"strconv"
 
 	"github.com/machado-br/order-service/domain/entities"
 	"go.mongodb.org/mongo-driver/bson"
@@ -18,11 +20,11 @@ type repository struct {
 	MongoClient *mongo.Client
 }
 type Repository interface {
-	GetAll(ctx context.Context) ([]entities.Order, error)
-	Get(ctx context.Context, orderId string) (entities.Order, error)
-	Create(ctx context.Context, order entities.Order) (string, error)
-	Delete(ctx context.Context, orderId string) error
-	Replace(ctx context.Context, order entities.Order) (string, error)
+	GetAll(ctx context.Context) ([]entities.Product, error)
+	Get(ctx context.Context, productId string) (entities.Product, error)
+	Create(ctx context.Context, product entities.Product) (string, error)
+	Delete(ctx context.Context, productId string) error
+	Replace(ctx context.Context, product entities.Product) (string, error)
 }
 
 func NewRepository(
@@ -44,6 +46,7 @@ func NewRepository(
 		MongoClient: mongoClient,
 	}, nil
 }
+
 func buildMongoclient(ctx context.Context, databaseUri string) (*mongo.Client, error) {
 	log.Println("repository.buildMongoclient")
 
@@ -61,7 +64,7 @@ func buildMongoclient(ctx context.Context, databaseUri string) (*mongo.Client, e
 	return client, nil
 }
 
-func (r repository) GetAll(ctx context.Context) ([]entities.Order, error) {
+func (r repository) GetAll(ctx context.Context) ([]entities.Product, error) {
 	log.Println("repository.getAll")
 
 	filter := bson.D{{}}
@@ -69,49 +72,49 @@ func (r repository) GetAll(ctx context.Context) ([]entities.Order, error) {
 	cursor, err := r.Collection.Find(ctx, filter)
 	if err != nil {
 		log.Println(err)
-		return []entities.Order{}, err
+		return []entities.Product{}, err
 	}
 
-	var order entities.Order
-	var orders []entities.Order
+	var product entities.Product
+	var products []entities.Product
 	for cursor.Next(ctx) {
-		if err := cursor.Decode(&order); err != nil {
+		if err := cursor.Decode(&product); err != nil {
 			log.Fatalln(err)
 			log.Fatal(err)
 		}
-		orders = append(orders, order)
+		products = append(products, product)
 	}
 
-	return orders, nil
+	return products, nil
 }
 
-func (r repository) Get(ctx context.Context, orderId string) (entities.Order, error) {
+func (r repository) Get(ctx context.Context, productId string) (entities.Product, error) {
 	log.Println("repository.get")
 
-	filter := bson.D{primitive.E{Key: "orderId", Value: orderId}}
+	filter := bson.D{primitive.E{Key: "productId", Value: productId}}
 
 	cursor, err := r.Collection.Find(ctx, filter)
 	if err != nil {
 		log.Println(err)
-		return entities.Order{}, err
+		return entities.Product{}, err
 	}
 
-	var order entities.Order
+	var product entities.Product
 	for cursor.Next(ctx) {
-		if err := cursor.Decode(&order); err != nil {
+		if err := cursor.Decode(&product); err != nil {
 			log.Fatal(err)
 		}
 	}
 
-	return order, nil
+	return product, nil
 }
 
-func (r repository) Create(ctx context.Context, order entities.Order) (string, error) {
+func (r repository) Create(ctx context.Context, product entities.Product) (string, error) {
 	log.Println("repository.create")
 
-	order.Id = primitive.NewObjectID()
+	product.Id = primitive.NewObjectID()
 
-	doc, err := bson.Marshal(order)
+	doc, err := bson.Marshal(product)
 	if err != nil {
 		return "", err
 	}
@@ -121,13 +124,13 @@ func (r repository) Create(ctx context.Context, order entities.Order) (string, e
 		return "", err
 	}
 
-	return order.OrderId, nil
+	return product.ProductId, nil
 }
 
-func (r repository) Delete(ctx context.Context, orderId string) error {
+func (r repository) Delete(ctx context.Context, productId string) error {
 	log.Println("repository.delete")
 
-	filter := bson.D{primitive.E{Key: "orderId", Value: orderId}}
+	filter := bson.D{primitive.E{Key: "productId", Value: productId}}
 
 	_, err := r.Collection.DeleteOne(ctx, filter)
 	if err != nil {
@@ -137,20 +140,23 @@ func (r repository) Delete(ctx context.Context, orderId string) error {
 	return nil
 }
 
-func (r repository) Replace(ctx context.Context, order entities.Order) (string, error) {
+func (r repository) Replace(ctx context.Context, product entities.Product) (string, error) {
 	log.Println("repository.update")
 
-	doc, err := bson.Marshal(order)
+	doc, err := bson.Marshal(product)
 	if err != nil {
 		return "", err
 	}
-	filter := bson.D{primitive.E{Key: "orderId", Value: order.OrderId}}
 
-	_, err = r.Collection.ReplaceOne(ctx, filter, doc)
+	fmt.Printf("product: %v\n", product)
+
+	filter := bson.D{primitive.E{Key: "productId", Value: product.ProductId}}
+
+	result, err := r.Collection.ReplaceOne(ctx, filter, doc)
 	if err != nil {
 		log.Printf("err: %v\n", err)
 		return "", err
 	}
 
-	return "", nil
+	return strconv.FormatInt(result.ModifiedCount, 32), nil
 }

@@ -37,7 +37,7 @@ func (s service) FindAll(ctx context.Context) ([]dtos.Order, error) {
 
 	var result []dtos.Order
 
-	for i, _ := range orders {
+	for i := range orders {
 		dto, err := mapToDto(ctx, orders[i])
 		if err != nil {
 			return []dtos.Order{}, err

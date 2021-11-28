@@ -13,8 +13,8 @@ type Order struct {
 
 type Product struct {
 	Id        primitive.ObjectID `bson:"_id"`
-	ProductId string             `json:"productId" binding:"required"`
-	Name      string             `json:"name" binding:"required"`
-	Units     int                `json:"units" binding:"required"`
-	Price     float64            `json:"price" binding:"required"`
+	ProductId string             `json:"productId" bson:"productId" binding:"required"`
+	Name      string             `json:"name" bson:"name" binding:"required"`
+	Units     int                `json:"units" bson:"units" binding:"required"`
+	Price     float64            `json:"price" bson:"price" binding:"required"`
 }

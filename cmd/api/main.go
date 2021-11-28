@@ -7,6 +7,7 @@ import (
 
 	"github.com/machado-br/order-service/api"
 	orders "github.com/machado-br/order-service/domain/order"
+	products "github.com/machado-br/order-service/domain/product"
 )
 
 func main() {
@@ -16,10 +17,12 @@ func main() {
 	}
 
 	mongoUri := os.Getenv("MONGODB_URI")
-	databaseName := os.Getenv("DATABASE_NAME")
-	collectionName := os.Getenv("COLLECTION_NAME")
+	ordersDatabaseName := os.Getenv("ORDERS_DATABASE_NAME")
+	ordersCollectionName := os.Getenv("ORDERS_COLLECTION_NAME")
+	productsDatabaseName := os.Getenv("PRODUCTS_DATABASE_NAME")
+	productsCollectionName := os.Getenv("PRODUCTS_COLLECTION_NAME")
 
-	ordersRepository, err := orders.NewRepository(mongoUri, databaseName, collectionName)
+	ordersRepository, err := orders.NewRepository(mongoUri, ordersDatabaseName, ordersCollectionName)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -29,10 +32,20 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	ordersApi, err := api.NewApi(debug, ordersService)
+	productsRepository, err := products.NewRepository(mongoUri, productsDatabaseName, productsCollectionName)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	ordersApi.Run()
+	productsService := products.NewService(productsRepository)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	api, err := api.NewApi(debug, ordersService, productsService)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	api.Run()
 }
