@@ -75,4 +75,5 @@ require (
 	gopkg.in/yaml.v2 v2.2.8 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 	honnef.co/go/tools v0.0.1-2019.2.3 // indirect
+	labix.org/v2/mgo v0.0.0-20140701140051-000000000287 // indirect
 )

@@ -10,6 +10,7 @@ import (
 
 	"github.com/machado-br/order-service/domain/entities"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -80,7 +81,7 @@ func Get(ctx context.Context, orderId string) (entities.Order, error) {
 
 	cursor, err := productsCollection.Find(
 		ctx,
-		bson.D{{"id", orderId}},
+		bson.D{{"orderId", orderId}},
 	)
 
 	var order entities.Order
@@ -114,6 +115,8 @@ func Create(ctx context.Context, order entities.Order) (string, error) {
 	db := client.Database("order-service")
 	orderCollection := db.Collection("orders")
 
+	order.Id = primitive.NewObjectID()
+
 	doc, err := bson.Marshal(order)
 	if err != nil {
 		return "", err
@@ -121,12 +124,12 @@ func Create(ctx context.Context, order entities.Order) (string, error) {
 
 	result, err := orderCollection.InsertOne(ctx, doc)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 
 	fmt.Printf("result: %v\n", result)
 
-	return "", nil
+	return order.OrderId, nil
 }
 
 func Delete(ctx context.Context, orderId string) error {
@@ -158,7 +161,7 @@ func Delete(ctx context.Context, orderId string) error {
 }
 
 func Update(ctx context.Context, order entities.Order) (string, error) {
-	fmt.Println("service.update")
+	fmt.Println("repository.update")
 
 	client, err := buildMongoclient(ctx)
 	if err != nil {
@@ -178,7 +181,7 @@ func Update(ctx context.Context, order entities.Order) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	filter := bson.D{{"id", order.Id}}
+	filter := bson.M{"$_id": order.Id}
 
 	result, err := orderCollection.UpdateOne(ctx, doc, filter)
 	if err != nil {

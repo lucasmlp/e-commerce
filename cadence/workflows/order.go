@@ -40,12 +40,12 @@ func RunOrder(ctx workflow.Context, orderId string) error {
 		return err
 	}
 
-	err = handlePaymentProcess(ctx, order.Id, order.UserId, product.Price*float64(order.Quantity))
+	err = handlePaymentProcess(ctx, order.OrderId, order.UserId, product.Price*float64(order.Quantity))
 	if err != nil {
 		return err
 	}
 
-	err = handleShipment(ctx, order.Id, order.DeliveryAddress)
+	err = handleShipment(ctx, order.OrderId, order.DeliveryAddress)
 	if err != nil {
 		return err
 	}

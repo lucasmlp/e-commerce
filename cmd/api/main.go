@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/machado-br/order-service/domain/entities"
+	"github.com/machado-br/order-service/domain/dtos"
 	orders "github.com/machado-br/order-service/domain/order"
 )
 
@@ -42,7 +42,7 @@ func main() {
 
 		root.POST("", func(c *gin.Context) {
 
-			var order entities.Order
+			var order dtos.Order
 			err := c.ShouldBindJSON(&order)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, err)
@@ -66,7 +66,7 @@ func main() {
 
 		root.PUT("", func(c *gin.Context) {
 
-			var order entities.Order
+			var order dtos.Order
 			err := c.ShouldBindJSON(&order)
 			if err != nil {
 				c.JSON(http.StatusUnprocessableEntity, err)
