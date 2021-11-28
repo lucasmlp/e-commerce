@@ -2,16 +2,35 @@ package orders
 
 import (
 	"context"
-	"fmt"
+	"log"
 
 	"github.com/machado-br/order-service/domain/dtos"
 	"github.com/machado-br/order-service/domain/entities"
 )
 
-func GetOrders(ctx context.Context) ([]dtos.Order, error) {
-	fmt.Println("service.getOrders")
+type service struct {
+	repo Repository
+}
+type Service interface {
+	FindAll(ctx context.Context) ([]dtos.Order, error)
+	Find(ctx context.Context, id string) (dtos.Order, error)
+	Create(ctx context.Context, order dtos.Order) (string, error)
+	Delete(ctx context.Context, orderId string) error
+	Update(ctx context.Context, order dtos.Order) (string, error)
+}
 
-	orders, err := GetAll(ctx)
+func NewService(
+	repository Repository,
+) Service {
+	return service{
+		repo: repository,
+	}
+}
+
+func (s service) FindAll(ctx context.Context) ([]dtos.Order, error) {
+	log.Println("service.getOrders")
+
+	orders, err := s.repo.GetAll(ctx)
 	if err != nil {
 		return []dtos.Order{}, err
 	}
@@ -28,10 +47,10 @@ func GetOrders(ctx context.Context) ([]dtos.Order, error) {
 	return result, nil
 }
 
-func GetOrder(ctx context.Context, id string) (dtos.Order, error) {
-	fmt.Println("service.getOrder")
+func (s service) Find(ctx context.Context, id string) (dtos.Order, error) {
+	log.Println("service.getOrder")
 
-	order, err := Get(ctx, id)
+	order, err := s.repo.Get(ctx, id)
 	if err != nil {
 		return dtos.Order{}, err
 	}
@@ -44,15 +63,15 @@ func GetOrder(ctx context.Context, id string) (dtos.Order, error) {
 	return dto, nil
 }
 
-func CreateOrder(ctx context.Context, order dtos.Order) (string, error) {
-	fmt.Println("service.createOrder")
+func (s service) Create(ctx context.Context, order dtos.Order) (string, error) {
+	log.Println("service.createOrder")
 
 	entity, err := mapToEntity(ctx, order)
 	if err != nil {
 		return "", err
 	}
 
-	result, err := Create(ctx, entity)
+	result, err := s.repo.Create(ctx, entity)
 	if err != nil {
 		return "", err
 	}
@@ -60,10 +79,10 @@ func CreateOrder(ctx context.Context, order dtos.Order) (string, error) {
 	return result, nil
 }
 
-func DeleteOrder(ctx context.Context, orderId string) error {
-	fmt.Println("service.deleteOrder")
+func (s service) Delete(ctx context.Context, orderId string) error {
+	log.Println("service.deleteOrder")
 
-	err := Delete(ctx, orderId)
+	err := s.repo.Delete(ctx, orderId)
 	if err != nil {
 		return err
 	}
@@ -71,15 +90,15 @@ func DeleteOrder(ctx context.Context, orderId string) error {
 	return nil
 }
 
-func UpdateOrder(ctx context.Context, order dtos.Order) (string, error) {
-	fmt.Println("service.updateOrder")
+func (s service) Update(ctx context.Context, order dtos.Order) (string, error) {
+	log.Println("service.updateOrder")
 
-	orderEntity, err := Get(ctx, order.OrderId)
+	orderEntity, err := s.repo.Get(ctx, order.OrderId)
 	if err != nil {
 		return "", err
 	}
 
-	fmt.Printf("orderEntity: %v\n", orderEntity)
+	log.Printf("orderEntity: %v\n", orderEntity)
 
 	entity, err := mapToEntity(ctx, order)
 	if err != nil {
@@ -88,7 +107,7 @@ func UpdateOrder(ctx context.Context, order dtos.Order) (string, error) {
 
 	entity.Id = orderEntity.Id
 
-	result, err := Update(ctx, entity)
+	result, err := s.repo.Update(ctx, entity)
 	if err != nil {
 		return "", err
 	}

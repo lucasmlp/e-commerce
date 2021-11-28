@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/machado-br/order-service/domain/entities"
 	"go.mongodb.org/mongo-driver/bson"
@@ -15,29 +14,52 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func buildMongoclient(ctx context.Context) (*mongo.Client, error) {
-	var uri string
-	if uri = os.Getenv("MONGODB_URI"); uri == "" {
-		log.Fatal("You must set your 'MONGODB_URI' environmental variable. See\n\t https://docs.mongodb.com/drivers/go/current/usage-examples/#environment-variable")
+type repository struct {
+	DatabaseUri string
+}
+type Repository interface {
+	GetAll(ctx context.Context) ([]entities.Order, error)
+	Get(ctx context.Context, orderId string) (entities.Order, error)
+	Create(ctx context.Context, order entities.Order) (string, error)
+	Delete(ctx context.Context, orderId string) error
+	Update(ctx context.Context, order entities.Order) (string, error)
+}
+
+func NewRepository(
+	databaseUri string,
+) (Repository, error) {
+	return repository{
+		DatabaseUri: databaseUri,
+	}, nil
+}
+func (r repository) buildMongoclient(ctx context.Context) (*mongo.Client, error) {
+	log.Println("repository.buildMongoclient")
+
+	if r.DatabaseUri == "" {
+		log.Fatalln("You must set your 'MONGODB_URI' environmental variable. See\n\t https://docs.mongodb.com/drivers/go/current/usage-examples/#environment-variable")
 		return nil, errors.New("MongoDB URI not set in env file")
 	}
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
+
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(r.DatabaseUri))
 	if err != nil {
+		log.Println("err mongo.Connect")
+		log.Fatalln(err)
 		return nil, err
 	}
 	return client, nil
 }
 
-func GetAll(ctx context.Context) ([]entities.Order, error) {
-	fmt.Println("repository.getAll")
+func (r repository) GetAll(ctx context.Context) ([]entities.Order, error) {
+	log.Println("repository.getAll")
 
-	client, err := buildMongoclient(ctx)
+	client, err := r.buildMongoclient(ctx)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 		return []entities.Order{}, err
 	}
 	defer func() {
 		if err = client.Disconnect(ctx); err != nil {
+			log.Fatalln(err)
 			panic(err)
 		}
 	}()
@@ -53,6 +75,7 @@ func GetAll(ctx context.Context) ([]entities.Order, error) {
 	var orders []entities.Order
 	for cursor.Next(ctx) {
 		if err := cursor.Decode(&order); err != nil {
+			log.Fatalln(err)
 			log.Fatal(err)
 		}
 		orders = append(orders, order)
@@ -63,9 +86,10 @@ func GetAll(ctx context.Context) ([]entities.Order, error) {
 	return orders, nil
 }
 
-func Get(ctx context.Context, orderId string) (entities.Order, error) {
-	fmt.Println("repository.get")
-	client, err := buildMongoclient(ctx)
+func (r repository) Get(ctx context.Context, orderId string) (entities.Order, error) {
+	log.Println("repository.get")
+
+	client, err := r.buildMongoclient(ctx)
 	if err != nil {
 		log.Fatal(err)
 		return entities.Order{}, err
@@ -93,15 +117,15 @@ func Get(ctx context.Context, orderId string) (entities.Order, error) {
 		fmt.Println(string(p))
 	}
 
-	fmt.Printf("order: %v\n", order)
+	log.Printf("order: %v\n", order)
 
 	return order, nil
 }
 
-func Create(ctx context.Context, order entities.Order) (string, error) {
-	fmt.Println("service.create")
+func (r repository) Create(ctx context.Context, order entities.Order) (string, error) {
+	log.Println("service.create")
 
-	client, err := buildMongoclient(ctx)
+	client, err := r.buildMongoclient(ctx)
 	if err != nil {
 		log.Fatal(err)
 		return "", err
@@ -127,15 +151,15 @@ func Create(ctx context.Context, order entities.Order) (string, error) {
 		return "", err
 	}
 
-	fmt.Printf("result: %v\n", result)
+	log.Printf("result: %v\n", result)
 
 	return order.OrderId, nil
 }
 
-func Delete(ctx context.Context, orderId string) error {
-	fmt.Println("repository.delete")
+func (r repository) Delete(ctx context.Context, orderId string) error {
+	log.Println("repository.delete")
 
-	client, err := buildMongoclient(ctx)
+	client, err := r.buildMongoclient(ctx)
 	if err != nil {
 		log.Fatal(err)
 		return err
@@ -155,15 +179,15 @@ func Delete(ctx context.Context, orderId string) error {
 		return err
 	}
 
-	fmt.Printf("result: %v\n", result)
+	log.Printf("result: %v\n", result)
 
 	return nil
 }
 
-func Update(ctx context.Context, order entities.Order) (string, error) {
-	fmt.Println("repository.update")
+func (r repository) Update(ctx context.Context, order entities.Order) (string, error) {
+	log.Println("repository.update")
 
-	client, err := buildMongoclient(ctx)
+	client, err := r.buildMongoclient(ctx)
 	if err != nil {
 		log.Fatal(err)
 		return "", err
@@ -188,7 +212,8 @@ func Update(ctx context.Context, order entities.Order) (string, error) {
 		fmt.Printf("err: %v\n", err)
 		return "", err
 	}
-	fmt.Printf("result: %v\n", result)
+
+	log.Printf("result: %v\n", result)
 
 	return "", nil
 }
