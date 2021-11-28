@@ -2,7 +2,6 @@ package orders
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -16,31 +15,45 @@ import (
 
 type repository struct {
 	DatabaseUri string
+	Collection  *mongo.Collection
+	MongoClient *mongo.Client
 }
 type Repository interface {
 	GetAll(ctx context.Context) ([]entities.Order, error)
 	Get(ctx context.Context, orderId string) (entities.Order, error)
 	Create(ctx context.Context, order entities.Order) (string, error)
 	Delete(ctx context.Context, orderId string) error
-	Update(ctx context.Context, order entities.Order) (string, error)
+	Replace(ctx context.Context, order entities.Order) (string, error)
 }
 
 func NewRepository(
 	databaseUri string,
+	databaseName string,
+	collectionName string,
 ) (Repository, error) {
+
+	mongoClient, err := buildMongoclient(context.Background(), databaseUri)
+	if err != nil {
+		return nil, err
+	}
+
+	mongoCollection := mongoClient.Database(databaseName).Collection(collectionName)
+
 	return repository{
 		DatabaseUri: databaseUri,
+		Collection:  mongoCollection,
+		MongoClient: mongoClient,
 	}, nil
 }
-func (r repository) buildMongoclient(ctx context.Context) (*mongo.Client, error) {
+func buildMongoclient(ctx context.Context, databaseUri string) (*mongo.Client, error) {
 	log.Println("repository.buildMongoclient")
 
-	if r.DatabaseUri == "" {
+	if databaseUri == "" {
 		log.Fatalln("You must set your 'MONGODB_URI' environmental variable. See\n\t https://docs.mongodb.com/drivers/go/current/usage-examples/#environment-variable")
 		return nil, errors.New("MongoDB URI not set in env file")
 	}
 
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(r.DatabaseUri))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(databaseUri))
 	if err != nil {
 		log.Println("err mongo.Connect")
 		log.Fatalln(err)
@@ -52,24 +65,13 @@ func (r repository) buildMongoclient(ctx context.Context) (*mongo.Client, error)
 func (r repository) GetAll(ctx context.Context) ([]entities.Order, error) {
 	log.Println("repository.getAll")
 
-	client, err := r.buildMongoclient(ctx)
-	if err != nil {
-		log.Fatalln(err)
-		return []entities.Order{}, err
-	}
-	defer func() {
-		if err = client.Disconnect(ctx); err != nil {
-			log.Fatalln(err)
-			panic(err)
-		}
-	}()
-
-	db := client.Database("order-service")
-	orderCollection := db.Collection("orders")
-
 	filter := bson.D{{}}
 
-	cursor, err := orderCollection.Find(ctx, filter)
+	cursor, err := r.Collection.Find(ctx, filter)
+	if err != nil {
+		log.Println(err)
+		return []entities.Order{}, err
+	}
 
 	var order entities.Order
 	var orders []entities.Order
@@ -79,8 +81,6 @@ func (r repository) GetAll(ctx context.Context) ([]entities.Order, error) {
 			log.Fatal(err)
 		}
 		orders = append(orders, order)
-		p, _ := json.MarshalIndent(order, "", "\t")
-		fmt.Println(string(p))
 	}
 
 	return orders, nil
@@ -89,55 +89,26 @@ func (r repository) GetAll(ctx context.Context) ([]entities.Order, error) {
 func (r repository) Get(ctx context.Context, orderId string) (entities.Order, error) {
 	log.Println("repository.get")
 
-	client, err := r.buildMongoclient(ctx)
+	filter := bson.D{primitive.E{Key: "orderId", Value: orderId}}
+
+	cursor, err := r.Collection.Find(ctx, filter)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 		return entities.Order{}, err
 	}
-	defer func() {
-		if err = client.Disconnect(ctx); err != nil {
-			panic(err)
-		}
-	}()
-
-	db := client.Database("order-service")
-	productsCollection := db.Collection("orders")
-
-	cursor, err := productsCollection.Find(
-		ctx,
-		bson.D{{"orderId", orderId}},
-	)
 
 	var order entities.Order
 	for cursor.Next(ctx) {
 		if err := cursor.Decode(&order); err != nil {
 			log.Fatal(err)
 		}
-		p, _ := json.MarshalIndent(order, "", "\t")
-		fmt.Println(string(p))
 	}
-
-	log.Printf("order: %v\n", order)
 
 	return order, nil
 }
 
 func (r repository) Create(ctx context.Context, order entities.Order) (string, error) {
-	log.Println("service.create")
-
-	client, err := r.buildMongoclient(ctx)
-	if err != nil {
-		log.Fatal(err)
-		return "", err
-	}
-	defer func() {
-		if err = client.Disconnect(ctx); err != nil {
-			panic(err)
-		}
-	}()
-
-	db := client.Database("order-service")
-	orderCollection := db.Collection("orders")
+	log.Println("repository.create")
 
 	order.Id = primitive.NewObjectID()
 
@@ -146,12 +117,10 @@ func (r repository) Create(ctx context.Context, order entities.Order) (string, e
 		return "", err
 	}
 
-	result, err := orderCollection.InsertOne(ctx, doc)
+	_, err = r.Collection.InsertOne(ctx, doc)
 	if err != nil {
 		return "", err
 	}
-
-	log.Printf("result: %v\n", result)
 
 	return order.OrderId, nil
 }
@@ -159,61 +128,30 @@ func (r repository) Create(ctx context.Context, order entities.Order) (string, e
 func (r repository) Delete(ctx context.Context, orderId string) error {
 	log.Println("repository.delete")
 
-	client, err := r.buildMongoclient(ctx)
-	if err != nil {
-		log.Fatal(err)
-		return err
-	}
-	defer func() {
-		if err = client.Disconnect(ctx); err != nil {
-			panic(err)
-		}
-	}()
+	filter := bson.D{primitive.E{Key: "orderId", Value: orderId}}
 
-	db := client.Database("order-service")
-	orderCollection := db.Collection("orders")
-
-	filter := bson.D{{"id", orderId}}
-	result, err := orderCollection.DeleteOne(ctx, filter)
+	_, err := r.Collection.DeleteOne(ctx, filter)
 	if err != nil {
 		return err
 	}
-
-	log.Printf("result: %v\n", result)
 
 	return nil
 }
 
-func (r repository) Update(ctx context.Context, order entities.Order) (string, error) {
+func (r repository) Replace(ctx context.Context, order entities.Order) (string, error) {
 	log.Println("repository.update")
-
-	client, err := r.buildMongoclient(ctx)
-	if err != nil {
-		log.Fatal(err)
-		return "", err
-	}
-	defer func() {
-		if err = client.Disconnect(ctx); err != nil {
-			panic(err)
-		}
-	}()
-
-	db := client.Database("order-service")
-	orderCollection := db.Collection("orders")
 
 	doc, err := bson.Marshal(order)
 	if err != nil {
 		return "", err
 	}
-	filter := bson.M{"_id": order.Id}
+	filter := bson.D{primitive.E{Key: "orderId", Value: order.Id}}
 
-	result, err := orderCollection.ReplaceOne(ctx, filter, doc)
+	_, err = r.Collection.ReplaceOne(ctx, filter, doc)
 	if err != nil {
 		fmt.Printf("err: %v\n", err)
 		return "", err
 	}
-
-	log.Printf("result: %v\n", result)
 
 	return "", nil
 }

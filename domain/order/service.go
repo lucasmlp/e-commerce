@@ -98,8 +98,6 @@ func (s service) Update(ctx context.Context, order dtos.Order) (string, error) {
 		return "", err
 	}
 
-	log.Printf("orderEntity: %v\n", orderEntity)
-
 	entity, err := mapToEntity(ctx, order)
 	if err != nil {
 		return "", err
@@ -107,7 +105,7 @@ func (s service) Update(ctx context.Context, order dtos.Order) (string, error) {
 
 	entity.Id = orderEntity.Id
 
-	result, err := s.repo.Update(ctx, entity)
+	result, err := s.repo.Replace(ctx, entity)
 	if err != nil {
 		return "", err
 	}

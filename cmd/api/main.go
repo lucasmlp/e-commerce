@@ -16,8 +16,10 @@ func main() {
 	}
 
 	mongoUri := os.Getenv("MONGODB_URI")
+	databaseName := os.Getenv("DATABASE_NAME")
+	collectionName := os.Getenv("COLLECTION_NAME")
 
-	ordersRepository, err := orders.NewRepository(mongoUri)
+	ordersRepository, err := orders.NewRepository(mongoUri, databaseName, collectionName)
 	if err != nil {
 		log.Fatalln(err)
 	}

@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
@@ -38,7 +37,6 @@ func (a api) Engine() *gin.Engine {
 			log.Println("GET /orders/:id")
 
 			orderId := c.Param("id")
-			fmt.Printf("orderId: %v\n", orderId)
 
 			order, err := a.OrdersService.Find(c, orderId)
 			if err != nil {
