@@ -31,11 +31,6 @@ func NewOrderWorkflow(storageWorkflow StorageWorkflow, activities activities.Act
 	return orderWorkflow, nil
 }
 
-const (
-	standardStepTimeout          = 90 * time.Second
-	standardChildWorkflowTimeout = 30 * time.Second
-)
-
 func (o OrderWorkflow) RunOrder(ctx workflow.Context, orderId string) error {
 	logger := o.buildOrderWorkflowLogger(ctx, orderId)
 
@@ -152,33 +147,4 @@ func (o OrderWorkflow) handleShipment(ctx workflow.Context, orderId string, orde
 		return err
 	}
 	return nil
-}
-
-func (o OrderWorkflow) handleStandardSignal(ctx workflow.Context, signalName string, receivedSignalMsg string, failedMsg string) error {
-	logger := workflow.GetLogger(ctx)
-	var signalVal string
-	var receivedSignal bool
-	signalChan := workflow.GetSignalChannel(ctx, signalName)
-	timerCtx, cancelTimer := workflow.WithCancel(ctx)
-	stepTimer := workflow.NewTimer(timerCtx, standardStepTimeout)
-	s := workflow.NewSelector(ctx)
-	s.AddReceive(signalChan, func(c workflow.Channel, more bool) {
-		c.Receive(ctx, &signalVal)
-		receivedSignal = true
-		cancelTimer()
-		logger.Info(receivedSignalMsg,
-			zap.String("Signal value: ", signalVal))
-	})
-
-	s.AddFuture(stepTimer, func(f workflow.Future) {
-		logger.Info("Step timed out")
-	})
-
-	s.Select(ctx)
-
-	if receivedSignal && signalVal == "Success" {
-		return nil
-	} else {
-		return errors.New(failedMsg)
-	}
 }
