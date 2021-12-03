@@ -7,7 +7,6 @@ import (
 
 	"github.com/machado-br/order-service/cadence/activities"
 	"github.com/machado-br/order-service/domain/dtos"
-	"github.com/machado-br/order-service/domain/entities"
 	"github.com/pborman/uuid"
 	"go.uber.org/cadence/workflow"
 	"go.uber.org/zap"
@@ -15,6 +14,7 @@ import (
 
 type OrderWorkflow struct {
 	StorageWorkflow StorageWorkflow
+	Activities      Activities
 }
 
 func NewOrderWorkflow(storageWorkflow StorageWorkflow) (OrderWorkflow, error) {
@@ -45,7 +45,7 @@ func (o OrderWorkflow) RunOrder(ctx workflow.Context, orderId string) error {
 		ScheduleToStartTimeout: time.Second * 30,
 	}
 
-	var order entities.Order
+	var order dtos.Order
 	var err error
 
 	ctx = workflow.WithActivityOptions(ctx, ao)

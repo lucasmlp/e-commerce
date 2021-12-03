@@ -8,50 +8,32 @@ import (
 	"log"
 	"os"
 
-	entities "github.com/machado-br/order-service/domain/entities"
+	"github.com/machado-br/order-service/domain/dtos"
+	"github.com/machado-br/order-service/domain/entities"
+	"github.com/machado-br/order-service/domain/orders"
+	"github.com/machado-br/order-service/domain/products"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// type activites struct {
-// 	OrderService orders.Service
-// 	ProductsService product.Service
-// }
+type Activities struct {
+	OrderService    orders.Service
+	ProductsService products.Service
+}
 
-// type Activities interface{
-
-// }
-
-// func NewActivities() {}
-
-func GetOrder(ctx context.Context, orderId string) (entities.Order, error) {
-	client, err := buildMongoclient(ctx)
-	if err != nil {
-		log.Fatal(err)
-		return entities.Order{}, err
+func NewActivities(orderService orders.Service, productService products.Service) (Activities, error) {
+	activities := Activities{
+		OrderService:    orderService,
+		ProductsService: productService,
 	}
-	defer func() {
-		if err = client.Disconnect(ctx); err != nil {
-			panic(err)
-		}
-	}()
+	return activities, nil
+}
 
-	db := client.Database("order-service")
-	productsCollection := db.Collection("orders")
-
-	cursor, err := productsCollection.Find(
-		ctx,
-		bson.D{{"orderId", orderId}},
-	)
-
-	var order entities.Order
-	for cursor.Next(ctx) {
-		if err := cursor.Decode(&order); err != nil {
-			log.Fatal(err)
-		}
-		p, _ := json.MarshalIndent(order, "", "\t")
-		fmt.Println(string(p))
+func (a Activities) GetOrder(ctx context.Context, orderId string) (dtos.Order, error) {
+	order, err := a.OrderService.Find(ctx, orderId)
+	if err != nil {
+		return dtos.Order{}, err
 	}
 
 	return order, nil
