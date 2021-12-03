@@ -42,7 +42,7 @@ func GetOrder(ctx context.Context, orderId string) (entities.Order, error) {
 
 	cursor, err := productsCollection.Find(
 		ctx,
-		bson.D{{"id", orderId}},
+		bson.D{{"orderId", orderId}},
 	)
 
 	var order entities.Order

@@ -2,6 +2,7 @@ package workflows
 
 import (
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/machado-br/order-service/cadence/activities"
@@ -51,6 +52,14 @@ func (o OrderWorkflow) RunOrder(ctx workflow.Context, orderId string) error {
 	err = workflow.ExecuteActivity(ctx, activities.GetOrder, orderId).Get(ctx, &order)
 	if err != nil {
 		return err
+	}
+
+	if strings.Compare(order.OrderId, "") == 0 || order.OrderId == string(uuid.NIL) {
+		logger.Error("order not found",
+			zap.String("order id:", order.OrderId),
+		)
+
+		return errors.New("order not found")
 	}
 
 	product, err := o.handleStorageCheckAndReservation(ctx, order.ProductId, order.Quantity)
