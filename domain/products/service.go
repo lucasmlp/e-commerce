@@ -2,7 +2,6 @@ package products
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/machado-br/order-service/domain/dtos"
@@ -99,7 +98,7 @@ func (s service) Update(ctx context.Context, product dtos.Product) (string, erro
 		return "", err
 	}
 
-	fmt.Printf("productEntity: %v\n", productEntity)
+	log.Printf("productEntity: %v\n", productEntity)
 
 	entity, err := mapToEntity(ctx, product)
 	if err != nil {
@@ -107,6 +106,8 @@ func (s service) Update(ctx context.Context, product dtos.Product) (string, erro
 	}
 
 	entity.Id = productEntity.Id
+
+	log.Printf("entity: %v\n", entity)
 
 	result, err := s.repo.Replace(ctx, entity)
 	if err != nil {

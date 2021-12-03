@@ -87,6 +87,7 @@ func (r repository) GetAll(ctx context.Context) ([]entities.Order, error) {
 
 func (r repository) Get(ctx context.Context, orderId string) (entities.Order, error) {
 	log.Println("repository.get")
+	log.Println("orderId: ", orderId)
 
 	filter := bson.D{primitive.E{Key: "orderId", Value: orderId}}
 

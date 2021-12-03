@@ -90,6 +90,7 @@ func (r repository) GetAll(ctx context.Context) ([]entities.Product, error) {
 
 func (r repository) Get(ctx context.Context, productId string) (entities.Product, error) {
 	log.Println("repository.get")
+	log.Println("productId: ", productId)
 
 	filter := bson.D{primitive.E{Key: "productId", Value: productId}}
 
@@ -106,6 +107,7 @@ func (r repository) Get(ctx context.Context, productId string) (entities.Product
 		}
 	}
 
+	log.Printf("product: %v\n", product)
 	return product, nil
 }
 
