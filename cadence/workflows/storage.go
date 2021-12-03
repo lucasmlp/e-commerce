@@ -3,15 +3,33 @@ package workflows
 import (
 	"errors"
 	"strconv"
+	"strings"
 	"time"
 
-	"github.com/machado-br/order-service/cadence/activities"
-	"github.com/machado-br/order-service/domain/entities"
+	"github.com/machado-br/order-service/domain/dtos"
+	"github.com/machado-br/order-service/domain/products"
+	"github.com/pborman/uuid"
 	"go.uber.org/cadence/workflow"
 	"go.uber.org/zap"
 )
 
-func RunStorage(ctx workflow.Context, productId string, quantity int) (entities.Product, error) {
+type StorageWorkflow struct {
+	ProductsService products.Service
+}
+
+func NewStorageWorkflow(productsService products.Service) (StorageWorkflow, error) {
+	storageWorkflow := StorageWorkflow{
+		ProductsService: productsService,
+	}
+	workflow.RegisterWithOptions(storageWorkflow.RunStorage, workflow.RegisterOptions{
+		EnableShortName: true,
+		Name:            "RunStorage",
+	})
+
+	return storageWorkflow, nil
+}
+
+func (s StorageWorkflow) RunStorage(ctx workflow.Context, productId string, quantity int) (dtos.Product, error) {
 	logger := workflow.GetLogger(ctx)
 
 	logger.Info("storage workflow started",
@@ -25,11 +43,20 @@ func RunStorage(ctx workflow.Context, productId string, quantity int) (entities.
 		ScheduleToStartTimeout: time.Second * 120,
 	}
 
-	var product entities.Product
+	var product dtos.Product
 	ctx = workflow.WithActivityOptions(ctx, ao)
-	err := workflow.ExecuteActivity(ctx, activities.GetProduct, productId).Get(ctx, &product)
-	if err != nil {
-		return entities.Product{}, err
+	future := workflow.ExecuteActivity(ctx, s.ProductsService.Find, productId)
+	if err := future.Get(ctx, &product); err != nil {
+		workflow.GetLogger(ctx).Error("check storage availability failed.", zap.Error(err))
+		return dtos.Product{}, err
+	}
+
+	if strings.Compare(product.ProductId, "") == 0 || product.ProductId == string(uuid.NIL) {
+		logger.Error("product not found",
+			zap.String("product id:", product.ProductId),
+		)
+
+		return dtos.Product{}, errors.New("product not found")
 	}
 
 	logger.Info("reservation on product units started")
@@ -40,12 +67,14 @@ func RunStorage(ctx workflow.Context, productId string, quantity int) (entities.
 			zap.String("product units available:", strconv.Itoa(product.Units)),
 		)
 
-		return entities.Product{}, errors.New("not enough product units")
+		return dtos.Product{}, errors.New("not enough product units")
 	} else {
+		product.Units = product.Units - quantity
 		var result string
-		err := workflow.ExecuteActivity(ctx, activities.UpdateProductUnits, productId, product.Units-quantity).Get(ctx, &result)
-		if err != nil {
-			return entities.Product{}, err
+		future := workflow.ExecuteActivity(ctx, s.ProductsService.Update, product)
+		if err := future.Get(ctx, &result); err != nil {
+			workflow.GetLogger(ctx).Error("reservation on product units failed.", zap.Error(err))
+			return dtos.Product{}, err
 		}
 	}
 

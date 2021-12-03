@@ -2,11 +2,13 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/machado-br/order-service/cadence/activities"
 	"github.com/machado-br/order-service/cadence/helpers"
 	"github.com/machado-br/order-service/cadence/workflows"
+	"github.com/machado-br/order-service/domain/products"
 
 	"go.uber.org/cadence/activity"
 	"go.uber.org/cadence/worker"
@@ -15,6 +17,21 @@ import (
 )
 
 func main() {
+
+	mongoUri := os.Getenv("MONGODB_URI")
+	productsDatabaseName := os.Getenv("PRODUCTS_DATABASE_NAME")
+	productsCollectionName := os.Getenv("PRODUCTS_COLLECTION_NAME")
+
+	productsRepository, err := products.NewRepository(mongoUri, productsDatabaseName, productsCollectionName)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	productsService := products.NewService(productsRepository)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
 	serviceNameCadenceClient := os.Getenv("CADENCE_CLIENT_NAME")
 	serviceNameCadenceFrontend := os.Getenv("CADENCE_FRONTEND_NAME")
 	domainName := os.Getenv("CADENCE_DOMAIN_NAME")
@@ -31,14 +48,16 @@ func main() {
 		panic(err)
 	}
 
-	workflow.RegisterWithOptions(workflows.RunOrder, workflow.RegisterOptions{
-		EnableShortName: true,
-		Name:            "RunOrder",
-	})
-	workflow.RegisterWithOptions(workflows.RunStorage, workflow.RegisterOptions{
-		EnableShortName: true,
-		Name:            "RunStorage",
-	})
+	storageWorkflow, err := workflows.NewStorageWorkflow(productsService)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	_, err = workflows.NewOrderWorkflow(storageWorkflow)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
 	workflow.RegisterWithOptions(workflows.RunPayment, workflow.RegisterOptions{
 		EnableShortName: true,
 		Name:            "RunPayment",
@@ -49,8 +68,8 @@ func main() {
 	})
 
 	activity.Register(activities.GetOrder)
-	activity.Register(activities.GetProduct)
-	activity.Register(activities.UpdateProductUnits)
+	activity.Register(storageWorkflow.ProductsService.Find)
+	activity.Register(storageWorkflow.ProductsService.Update)
 
 	w := worker.New(workflowClient, domainName, "order-tasklist",
 		worker.Options{

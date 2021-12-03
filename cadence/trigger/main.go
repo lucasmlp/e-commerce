@@ -3,11 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"time"
 
 	"github.com/machado-br/order-service/cadence/helpers"
 	"github.com/machado-br/order-service/cadence/workflows"
+	"github.com/machado-br/order-service/domain/products"
 	"github.com/pborman/uuid"
 
 	"go.uber.org/cadence/client"
@@ -16,6 +18,29 @@ import (
 func main() {
 	serviceNameCadenceClient := os.Getenv("CADENCE_CLIENT_NAME")
 	serviceNameCadenceFrontend := os.Getenv("CADENCE_FRONTEND_NAME")
+	mongoUri := os.Getenv("MONGODB_URI")
+	productsDatabaseName := os.Getenv("PRODUCTS_DATABASE_NAME")
+	productsCollectionName := os.Getenv("PRODUCTS_COLLECTION_NAME")
+
+	productsRepository, err := products.NewRepository(mongoUri, productsDatabaseName, productsCollectionName)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	productsService := products.NewService(productsRepository)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	storageWorkflow, err := workflows.NewStorageWorkflow(productsService)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	orderWorkflow, err := workflows.NewOrderWorkflow(storageWorkflow)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	action := os.Args[1]
 
@@ -37,7 +62,7 @@ func main() {
 			ID:                           workflowId,
 			TaskList:                     "order-tasklist",
 			ExecutionStartToCloseTimeout: 5 * time.Minute,
-		}, workflows.RunOrder, orderId)
+		}, orderWorkflow.RunOrder, orderId)
 
 		fmt.Println("Started order workflow. Order ID: ", orderId)
 	case "StorageCheckReservationFinished":

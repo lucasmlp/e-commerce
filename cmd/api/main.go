@@ -6,8 +6,8 @@ import (
 	"strconv"
 
 	"github.com/machado-br/order-service/api"
-	orders "github.com/machado-br/order-service/domain/order"
-	products "github.com/machado-br/order-service/domain/product"
+	"github.com/machado-br/order-service/domain/orders"
+	"github.com/machado-br/order-service/domain/products"
 )
 
 func main() {

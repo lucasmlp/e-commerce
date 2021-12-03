@@ -5,19 +5,37 @@ import (
 	"time"
 
 	"github.com/machado-br/order-service/cadence/activities"
-	entities "github.com/machado-br/order-service/domain/entities"
+	"github.com/machado-br/order-service/domain/dtos"
+	"github.com/machado-br/order-service/domain/entities"
 	"github.com/pborman/uuid"
 	"go.uber.org/cadence/workflow"
 	"go.uber.org/zap"
 )
+
+type OrderWorkflow struct {
+	StorageWorkflow StorageWorkflow
+}
+
+func NewOrderWorkflow(storageWorkflow StorageWorkflow) (OrderWorkflow, error) {
+	orderWorkflow := OrderWorkflow{
+		StorageWorkflow: storageWorkflow,
+	}
+
+	workflow.RegisterWithOptions(orderWorkflow.RunOrder, workflow.RegisterOptions{
+		EnableShortName: true,
+		Name:            "RunOrder",
+	})
+
+	return orderWorkflow, nil
+}
 
 const (
 	standardStepTimeout          = 90 * time.Second
 	standardChildWorkflowTimeout = 30 * time.Second
 )
 
-func RunOrder(ctx workflow.Context, orderId string) error {
-	logger := buildOrderWorkflowLogger(ctx, orderId)
+func (o OrderWorkflow) RunOrder(ctx workflow.Context, orderId string) error {
+	logger := o.buildOrderWorkflowLogger(ctx, orderId)
 
 	logger.Info("order workflow started")
 
@@ -35,17 +53,17 @@ func RunOrder(ctx workflow.Context, orderId string) error {
 		return err
 	}
 
-	product, err := handleStorageCheckAndReservation(ctx, order.ProductId, order.Quantity)
+	product, err := o.handleStorageCheckAndReservation(ctx, order.ProductId, order.Quantity)
 	if err != nil {
 		return err
 	}
 
-	err = handlePaymentProcess(ctx, order.OrderId, order.UserId, product.Price*float64(order.Quantity))
+	err = o.handlePaymentProcess(ctx, order.OrderId, order.UserId, product.Price*float64(order.Quantity))
 	if err != nil {
 		return err
 	}
 
-	err = handleShipment(ctx, order.OrderId, order.DeliveryAddress)
+	err = o.handleShipment(ctx, order.OrderId, order.DeliveryAddress)
 	if err != nil {
 		return err
 	}
@@ -55,7 +73,7 @@ func RunOrder(ctx workflow.Context, orderId string) error {
 	return nil
 }
 
-func buildOrderWorkflowLogger(ctx workflow.Context, orderId string) *zap.Logger {
+func (o OrderWorkflow) buildOrderWorkflowLogger(ctx workflow.Context, orderId string) *zap.Logger {
 	logger := workflow.GetLogger(ctx)
 	workflowInfo := workflow.GetInfo(ctx)
 
@@ -65,7 +83,7 @@ func buildOrderWorkflowLogger(ctx workflow.Context, orderId string) *zap.Logger 
 	return logger
 }
 
-func handleStorageCheckAndReservation(ctx workflow.Context, productId string, quantity int) (entities.Product, error) {
+func (o OrderWorkflow) handleStorageCheckAndReservation(ctx workflow.Context, productId string, quantity int) (dtos.Product, error) {
 	logger := workflow.GetLogger(ctx)
 
 	logger.Info("started to check storage and reserve product(s)")
@@ -76,17 +94,17 @@ func handleStorageCheckAndReservation(ctx workflow.Context, productId string, qu
 	}
 	ctx = workflow.WithChildOptions(ctx, cwo)
 
-	var product entities.Product
-	future := workflow.ExecuteChildWorkflow(ctx, RunStorage, productId, quantity)
+	var product dtos.Product
+	future := workflow.ExecuteChildWorkflow(ctx, o.StorageWorkflow.RunStorage, productId, quantity)
 	if err := future.Get(ctx, &product); err != nil {
 		workflow.GetLogger(ctx).Error("storage workflow failed.", zap.Error(err))
-		return entities.Product{}, err
+		return dtos.Product{}, err
 	}
 
 	return product, nil
 }
 
-func handlePaymentProcess(ctx workflow.Context, orderId string, userId string, orderValue float64) error {
+func (o OrderWorkflow) handlePaymentProcess(ctx workflow.Context, orderId string, userId string, orderValue float64) error {
 	logger := workflow.GetLogger(ctx)
 
 	logger.Info("started to process payment")
@@ -106,7 +124,7 @@ func handlePaymentProcess(ctx workflow.Context, orderId string, userId string, o
 	return nil
 }
 
-func handleShipment(ctx workflow.Context, orderId string, orderDeliveryAddress string) error {
+func (o OrderWorkflow) handleShipment(ctx workflow.Context, orderId string, orderDeliveryAddress string) error {
 	logger := workflow.GetLogger(ctx)
 
 	logger.Info("shipment process started")
@@ -126,7 +144,7 @@ func handleShipment(ctx workflow.Context, orderId string, orderDeliveryAddress s
 	return nil
 }
 
-func handleStandardSignal(ctx workflow.Context, signalName string, receivedSignalMsg string, failedMsg string) error {
+func (o OrderWorkflow) handleStandardSignal(ctx workflow.Context, signalName string, receivedSignalMsg string, failedMsg string) error {
 	logger := workflow.GetLogger(ctx)
 	var signalVal string
 	var receivedSignal bool

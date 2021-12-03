@@ -14,6 +14,17 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+// type activites struct {
+// 	OrderService orders.Service
+// 	ProductsService product.Service
+// }
+
+// type Activities interface{
+
+// }
+
+// func NewActivities() {}
+
 func GetOrder(ctx context.Context, orderId string) (entities.Order, error) {
 	client, err := buildMongoclient(ctx)
 	if err != nil {
@@ -96,7 +107,7 @@ func UpdateProductUnits(ctx context.Context, productId string, units int) error 
 	}()
 
 	coll := client.Database("storage-service").Collection("products")
-	filter := bson.D{{"id", productId}}
+	filter := bson.D{{"productId", productId}}
 	update := bson.D{{"$set", bson.D{{"units", units}}}}
 	result, err := coll.UpdateOne(context.TODO(), filter, update)
 	if err != nil {

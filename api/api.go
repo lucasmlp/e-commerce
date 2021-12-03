@@ -6,8 +6,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/machado-br/order-service/domain/dtos"
-	orders "github.com/machado-br/order-service/domain/order"
-	products "github.com/machado-br/order-service/domain/product"
+	"github.com/machado-br/order-service/domain/orders"
+	"github.com/machado-br/order-service/domain/products"
 )
 
 type api struct {

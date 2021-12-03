@@ -25,10 +25,10 @@ cadence-worker:
 	@ echo
 	@ echo "Starting the Cadence Worker..."
 	@ echo
-	@ go run ./worker/main.go
+	@ go run ./cmd/workflowworker/main.go
 
 order:
-	@ go run ./trigger/main.go RunOrder
+	@ go run ./cadence/trigger/main.go RunOrder
 
 storage-check-reservation-finished:
 	@ go run ./trigger/main.go StorageCheckReservationFinished $(filter-out $@,$(MAKECMDGOALS))
