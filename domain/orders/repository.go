@@ -18,8 +18,8 @@ type repository struct {
 	MongoClient *mongo.Client
 }
 type Repository interface {
-	GetAll(ctx context.Context) ([]entities.Order, error)
-	Get(ctx context.Context, orderId string) (entities.Order, error)
+	FindAll(ctx context.Context) ([]entities.Order, error)
+	Find(ctx context.Context, orderId string) (entities.Order, error)
 	Create(ctx context.Context, order entities.Order) (string, error)
 	Delete(ctx context.Context, orderId string) error
 	Replace(ctx context.Context, order entities.Order) (string, error)
@@ -58,10 +58,17 @@ func buildMongoclient(ctx context.Context, databaseUri string) (*mongo.Client, e
 		log.Fatalln(err)
 		return nil, err
 	}
+
+	err = client.Ping(ctx, nil)
+	if err != nil {
+		log.Fatal(err)
+		return nil, err
+	}
+
 	return client, nil
 }
 
-func (r repository) GetAll(ctx context.Context) ([]entities.Order, error) {
+func (r repository) FindAll(ctx context.Context) ([]entities.Order, error) {
 	log.Println("repository.getAll")
 
 	filter := bson.D{{}}
@@ -85,7 +92,7 @@ func (r repository) GetAll(ctx context.Context) ([]entities.Order, error) {
 	return orders, nil
 }
 
-func (r repository) Get(ctx context.Context, orderId string) (entities.Order, error) {
+func (r repository) Find(ctx context.Context, orderId string) (entities.Order, error) {
 	log.Println("repository.get")
 	log.Println("orderId: ", orderId)
 

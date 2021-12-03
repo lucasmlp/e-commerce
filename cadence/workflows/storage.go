@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/machado-br/order-service/cadence/activities"
 	"github.com/machado-br/order-service/domain/dtos"
 	"github.com/machado-br/order-service/domain/products"
 	"github.com/pborman/uuid"
@@ -15,11 +16,13 @@ import (
 
 type StorageWorkflow struct {
 	ProductsService products.Service
+	Activities      activities.Activities
 }
 
-func NewStorageWorkflow(productsService products.Service) (StorageWorkflow, error) {
+func NewStorageWorkflow(productsService products.Service, activities activities.Activities) (StorageWorkflow, error) {
 	storageWorkflow := StorageWorkflow{
 		ProductsService: productsService,
+		Activities:      activities,
 	}
 	workflow.RegisterWithOptions(storageWorkflow.RunStorage, workflow.RegisterOptions{
 		EnableShortName: true,
@@ -45,7 +48,7 @@ func (s StorageWorkflow) RunStorage(ctx workflow.Context, productId string, quan
 
 	var product dtos.Product
 	ctx = workflow.WithActivityOptions(ctx, ao)
-	future := workflow.ExecuteActivity(ctx, s.ProductsService.Find, productId)
+	future := workflow.ExecuteActivity(ctx, s.Activities.GetProduct, productId)
 	if err := future.Get(ctx, &product); err != nil {
 		workflow.GetLogger(ctx).Error("check storage availability failed.", zap.Error(err))
 		return dtos.Product{}, err
@@ -71,7 +74,7 @@ func (s StorageWorkflow) RunStorage(ctx workflow.Context, productId string, quan
 	} else {
 		product.Units = product.Units - quantity
 		var result string
-		future := workflow.ExecuteActivity(ctx, s.ProductsService.Update, product)
+		future := workflow.ExecuteActivity(ctx, s.Activities.UpdateProduct, product)
 		if err := future.Get(ctx, &result); err != nil {
 			workflow.GetLogger(ctx).Error("reservation on product units failed.", zap.Error(err))
 			return dtos.Product{}, err

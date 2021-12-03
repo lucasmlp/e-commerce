@@ -1,13 +1,13 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
 	"github.com/machado-br/order-service/cadence/activities"
 	"github.com/machado-br/order-service/cadence/helpers"
 	"github.com/machado-br/order-service/cadence/workflows"
+	"github.com/machado-br/order-service/domain/orders"
 	"github.com/machado-br/order-service/domain/products"
 
 	"go.uber.org/cadence/activity"
@@ -19,8 +19,20 @@ import (
 func main() {
 
 	mongoUri := os.Getenv("MONGODB_URI")
+	ordersDatabaseName := os.Getenv("ORDERS_DATABASE_NAME")
+	ordersCollectionName := os.Getenv("ORDERS_COLLECTION_NAME")
 	productsDatabaseName := os.Getenv("PRODUCTS_DATABASE_NAME")
 	productsCollectionName := os.Getenv("PRODUCTS_COLLECTION_NAME")
+
+	ordersRepository, err := orders.NewRepository(mongoUri, ordersDatabaseName, ordersCollectionName)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	ordersService := orders.NewService(ordersRepository)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	productsRepository, err := products.NewRepository(mongoUri, productsDatabaseName, productsCollectionName)
 	if err != nil {
@@ -36,8 +48,6 @@ func main() {
 	serviceNameCadenceFrontend := os.Getenv("CADENCE_FRONTEND_NAME")
 	domainName := os.Getenv("CADENCE_DOMAIN_NAME")
 
-	fmt.Printf("serviceNameCadenceClient: %v\n", serviceNameCadenceClient)
-
 	workflowClient, err := helpers.NewWorkflowClient(serviceNameCadenceClient, serviceNameCadenceFrontend)
 	if err != nil {
 		panic(err)
@@ -48,12 +58,17 @@ func main() {
 		panic(err)
 	}
 
-	storageWorkflow, err := workflows.NewStorageWorkflow(productsService)
+	activities, err := activities.NewActivities(ordersService, productsService)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	_, err = workflows.NewOrderWorkflow(storageWorkflow)
+	storageWorkflow, err := workflows.NewStorageWorkflow(productsService, activities)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	_, err = workflows.NewOrderWorkflow(storageWorkflow, activities)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -68,8 +83,8 @@ func main() {
 	})
 
 	activity.Register(activities.GetOrder)
-	activity.Register(storageWorkflow.ProductsService.Find)
-	activity.Register(storageWorkflow.ProductsService.Update)
+	activity.Register(activities.GetProduct)
+	activity.Register(activities.UpdateProduct)
 
 	w := worker.New(workflowClient, domainName, "order-tasklist",
 		worker.Options{

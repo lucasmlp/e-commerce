@@ -20,8 +20,8 @@ type repository struct {
 	MongoClient *mongo.Client
 }
 type Repository interface {
-	GetAll(ctx context.Context) ([]entities.Product, error)
-	Get(ctx context.Context, productId string) (entities.Product, error)
+	FindAll(ctx context.Context) ([]entities.Product, error)
+	Find(ctx context.Context, productId string) (entities.Product, error)
 	Create(ctx context.Context, product entities.Product) (string, error)
 	Delete(ctx context.Context, productId string) error
 	Replace(ctx context.Context, product entities.Product) (string, error)
@@ -61,10 +61,17 @@ func buildMongoclient(ctx context.Context, databaseUri string) (*mongo.Client, e
 		log.Fatalln(err)
 		return nil, err
 	}
+
+	err = client.Ping(ctx, nil)
+	if err != nil {
+		log.Fatal(err)
+		return nil, err
+	}
+
 	return client, nil
 }
 
-func (r repository) GetAll(ctx context.Context) ([]entities.Product, error) {
+func (r repository) FindAll(ctx context.Context) ([]entities.Product, error) {
 	log.Println("repository.getAll")
 
 	filter := bson.D{{}}
@@ -88,7 +95,7 @@ func (r repository) GetAll(ctx context.Context) ([]entities.Product, error) {
 	return products, nil
 }
 
-func (r repository) Get(ctx context.Context, productId string) (entities.Product, error) {
+func (r repository) Find(ctx context.Context, productId string) (entities.Product, error) {
 	log.Println("repository.get")
 	log.Println("productId: ", productId)
 

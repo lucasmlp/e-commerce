@@ -14,12 +14,13 @@ import (
 
 type OrderWorkflow struct {
 	StorageWorkflow StorageWorkflow
-	Activities      Activities
+	Activities      activities.Activities
 }
 
-func NewOrderWorkflow(storageWorkflow StorageWorkflow) (OrderWorkflow, error) {
+func NewOrderWorkflow(storageWorkflow StorageWorkflow, activities activities.Activities) (OrderWorkflow, error) {
 	orderWorkflow := OrderWorkflow{
 		StorageWorkflow: storageWorkflow,
+		Activities:      activities,
 	}
 
 	workflow.RegisterWithOptions(orderWorkflow.RunOrder, workflow.RegisterOptions{
@@ -49,7 +50,7 @@ func (o OrderWorkflow) RunOrder(ctx workflow.Context, orderId string) error {
 	var err error
 
 	ctx = workflow.WithActivityOptions(ctx, ao)
-	err = workflow.ExecuteActivity(ctx, activities.GetOrder, orderId).Get(ctx, &order)
+	err = workflow.ExecuteActivity(ctx, o.Activities.GetOrder, orderId).Get(ctx, &order)
 	if err != nil {
 		return err
 	}

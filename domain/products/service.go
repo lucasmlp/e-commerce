@@ -30,7 +30,7 @@ func NewService(
 func (s service) FindAll(ctx context.Context) ([]dtos.Product, error) {
 	log.Println("service.getProducts")
 
-	products, err := s.repo.GetAll(ctx)
+	products, err := s.repo.FindAll(ctx)
 	if err != nil {
 		return []dtos.Product{}, err
 	}
@@ -50,7 +50,7 @@ func (s service) FindAll(ctx context.Context) ([]dtos.Product, error) {
 func (s service) Find(ctx context.Context, id string) (dtos.Product, error) {
 	log.Println("service.getProduct")
 
-	product, err := s.repo.Get(ctx, id)
+	product, err := s.repo.Find(ctx, id)
 	if err != nil {
 		return dtos.Product{}, err
 	}
@@ -93,7 +93,7 @@ func (s service) Delete(ctx context.Context, productId string) error {
 func (s service) Update(ctx context.Context, product dtos.Product) (string, error) {
 	log.Println("service.updateProduct")
 
-	productEntity, err := s.repo.Get(ctx, product.ProductId)
+	productEntity, err := s.repo.Find(ctx, product.ProductId)
 	if err != nil {
 		return "", err
 	}
