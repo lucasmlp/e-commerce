@@ -23,6 +23,7 @@ type Repository interface {
 	Create(ctx context.Context, order entities.Order) (string, error)
 	Delete(ctx context.Context, orderId string) error
 	Replace(ctx context.Context, order entities.Order) (string, error)
+	UpdateStatus(ctx context.Context, orderId string, status string) (int, error)
 }
 
 func NewRepository(
@@ -161,4 +162,21 @@ func (r repository) Replace(ctx context.Context, order entities.Order) (string, 
 	}
 
 	return "", nil
+}
+
+func (r repository) UpdateStatus(ctx context.Context, orderId string, status string) (int, error) {
+	log.Println("repository.updateStatus")
+
+	filter := bson.D{primitive.E{Key: "orderId", Value: orderId}}
+	update := bson.D{
+		{"$set", bson.D{{"status", status}}},
+	}
+
+	result, err := r.Collection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		log.Printf("err: %v\n", err)
+		return 0, err
+	}
+
+	return int(result.ModifiedCount), nil
 }

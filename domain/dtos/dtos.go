@@ -1,11 +1,12 @@
 package dtos
 
 type Order struct {
-	OrderId         string `json:"orderId" bson:"orderId" binding:"required"`
-	UserId          string `json:"userId" bson:"userId" binding:"required"`
-	ProductId       string `json:"productId" bson:"productId" binding:"required"`
-	Quantity        int    `json:"quantity" bson:"quantity" binding:"required"`
-	DeliveryAddress string `json:"deliveryAddress" bson:"deliveryAddress" binding:"required"`
+	OrderId         string `json:"orderId" binding:"required"`
+	UserId          string `json:"userId" binding:"required"`
+	ProductId       string `json:"productId" binding:"required"`
+	Quantity        int    `json:"quantity" binding:"required"`
+	DeliveryAddress string `json:"deliveryAddress" binding:"required"`
+	Status          string `json:"status" binding:"required"`
 }
 
 type Product struct {

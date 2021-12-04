@@ -68,6 +68,16 @@ func (o OrderWorkflow) RunOrder(ctx workflow.Context, orderId string) error {
 		return err
 	}
 
+	var orderWithStatusUpdated int
+	future := workflow.ExecuteActivity(ctx, o.Activities.UpdateOrderStatus, order.OrderId, "payment pending")
+	err = future.Get(ctx, &orderWithStatusUpdated)
+	if err != nil {
+		return err
+	}
+	if orderWithStatusUpdated != 1 {
+		return errors.New("failed to update order status")
+	}
+
 	err = o.handleShipment(ctx, order.OrderId, order.DeliveryAddress)
 	if err != nil {
 		return err

@@ -47,3 +47,12 @@ func (a Activities) UpdateProduct(ctx context.Context, product dtos.Product) (st
 	}
 	return result, nil
 }
+
+func (a Activities) UpdateOrderStatus(ctx context.Context, orderId string, status string) (int, error) {
+
+	result, err := a.OrderService.UpdateStatus(ctx, orderId, status)
+	if err != nil {
+		return 0, err
+	}
+	return result, nil
+}

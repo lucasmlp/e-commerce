@@ -17,6 +17,7 @@ type Service interface {
 	Create(ctx context.Context, order dtos.Order) (string, error)
 	Delete(ctx context.Context, orderId string) error
 	Update(ctx context.Context, order dtos.Order) (string, error)
+	UpdateStatus(ctx context.Context, orderId string, status string) (int, error)
 }
 
 func NewService(
@@ -108,6 +109,16 @@ func (s service) Update(ctx context.Context, order dtos.Order) (string, error) {
 	result, err := s.repo.Replace(ctx, entity)
 	if err != nil {
 		return "", err
+	}
+	return result, nil
+}
+
+func (s service) UpdateStatus(ctx context.Context, orderId string, status string) (int, error) {
+	log.Println("service.updateStatus")
+
+	result, err := s.repo.UpdateStatus(ctx, orderId, status)
+	if err != nil {
+		return 0, err
 	}
 	return result, nil
 }

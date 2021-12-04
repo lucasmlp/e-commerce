@@ -85,6 +85,7 @@ func main() {
 	activity.Register(activities.GetOrder)
 	activity.Register(activities.GetProduct)
 	activity.Register(activities.UpdateProduct)
+	activity.Register(activities.UpdateOrderStatus)
 
 	w := worker.New(workflowClient, domainName, "order-tasklist",
 		worker.Options{
