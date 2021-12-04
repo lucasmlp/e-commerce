@@ -130,6 +130,7 @@ func mapToEntity(ctx context.Context, orderDto dtos.Order) (entities.Order, erro
 		ProductId:       orderDto.ProductId,
 		Quantity:        orderDto.Quantity,
 		DeliveryAddress: orderDto.DeliveryAddress,
+		Status:          orderDto.Status,
 	}, nil
 }
 
@@ -140,5 +141,6 @@ func mapToDto(ctx context.Context, orderEntity entities.Order) (dtos.Order, erro
 		ProductId:       orderEntity.ProductId,
 		Quantity:        orderEntity.Quantity,
 		DeliveryAddress: orderEntity.DeliveryAddress,
+		Status:          orderEntity.Status,
 	}, nil
 }

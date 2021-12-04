@@ -9,6 +9,12 @@ server:
 	@ echo
 	@ go run ./cmd/api/main.go
 
+test:
+	@ echo
+	@ echo "Starting running tests..."
+	@ echo
+	@ go clean -testcache & go test -cover ./...
+
 cadence-containers:
 	@ echo
 	@ echo "Starting Cassandra Cadence and Cadence Web..."
@@ -41,3 +47,11 @@ shipment-finished:
 	
 connect:
 	@ kubectl proxy --port=9874 &
+
+mock:
+	@ echo
+	@ echo "Starting building mocks..."
+	@ echo
+	@ mkdir -p mocks
+	@ mockgen -source=domain/orders/service.go -destination=domain/orders/mocks/service_mock.go -package=mocks
+	@ mockgen -source=domain/orders/repository.go -destination=domain/orders/mocks/repository_mock.go -package=mocks
