@@ -4,11 +4,13 @@ go 1.17
 
 require (
 	github.com/gin-gonic/gin v1.7.7
+	github.com/golang/mock v1.6.0
 	github.com/pborman/uuid v1.2.1
 	go.mongodb.org/mongo-driver v1.7.4
 	go.uber.org/cadence v0.18.5
 	go.uber.org/yarpc v1.59.0
 	go.uber.org/zap v1.19.1
+	gotest.tools v2.2.0+incompatible
 )
 
 require (
@@ -25,7 +27,6 @@ require (
 	github.com/go-playground/universal-translator v0.17.0 // indirect
 	github.com/go-playground/validator/v10 v10.4.1 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
-	github.com/golang/mock v1.6.0 // indirect
 	github.com/golang/protobuf v1.3.3 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/go-cmp v0.5.2 // indirect
@@ -75,6 +76,5 @@ require (
 	google.golang.org/grpc v1.28.0 // indirect
 	gopkg.in/yaml.v2 v2.2.8 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
-	gotest.tools v2.2.0+incompatible // indirect
 	honnef.co/go/tools v0.0.1-2019.2.3 // indirect
 )
