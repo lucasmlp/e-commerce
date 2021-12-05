@@ -5,9 +5,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/machado-br/order-service/domain/dtos"
-	"github.com/machado-br/order-service/domain/orders"
-	"github.com/machado-br/order-service/domain/products"
+	"github.com/machado-br/e-commerce/domain/dtos"
+	"github.com/machado-br/e-commerce/domain/orders"
+	"github.com/machado-br/e-commerce/domain/products"
 )
 
 type api struct {

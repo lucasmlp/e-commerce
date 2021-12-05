@@ -9,7 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	dtos "github.com/machado-br/order-service/domain/dtos"
+	dtos "github.com/machado-br/e-commerce/domain/dtos"
 )
 
 // MockService is a mock of Service interface.

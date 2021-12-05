@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/machado-br/order-service/cadence/activities"
-	"github.com/machado-br/order-service/domain/dtos"
+	"github.com/machado-br/e-commerce/cadence/activities"
+	"github.com/machado-br/e-commerce/domain/dtos"
 	"github.com/pborman/uuid"
 	"go.uber.org/cadence/workflow"
 	"go.uber.org/zap"

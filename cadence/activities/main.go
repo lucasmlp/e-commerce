@@ -3,9 +3,9 @@ package activities
 import (
 	"context"
 
-	"github.com/machado-br/order-service/domain/dtos"
-	"github.com/machado-br/order-service/domain/orders"
-	"github.com/machado-br/order-service/domain/products"
+	"github.com/machado-br/e-commerce/domain/dtos"
+	"github.com/machado-br/e-commerce/domain/orders"
+	"github.com/machado-br/e-commerce/domain/products"
 )
 
 type Activities struct {

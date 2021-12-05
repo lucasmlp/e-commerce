@@ -6,9 +6,9 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/machado-br/order-service/domain/dtos"
-	"github.com/machado-br/order-service/domain/entities"
-	"github.com/machado-br/order-service/domain/orders/mocks"
+	"github.com/machado-br/e-commerce/domain/dtos"
+	"github.com/machado-br/e-commerce/domain/entities"
+	"github.com/machado-br/e-commerce/domain/orders/mocks"
 	"github.com/pborman/uuid"
 	"gotest.tools/assert"
 )

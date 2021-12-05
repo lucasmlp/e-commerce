@@ -4,8 +4,8 @@ import (
 	"context"
 	"log"
 
-	"github.com/machado-br/order-service/domain/dtos"
-	"github.com/machado-br/order-service/domain/entities"
+	"github.com/machado-br/e-commerce/domain/dtos"
+	"github.com/machado-br/e-commerce/domain/entities"
 )
 
 type service struct {

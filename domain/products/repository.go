@@ -7,7 +7,7 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/machado-br/order-service/domain/entities"
+	"github.com/machado-br/e-commerce/domain/entities"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"

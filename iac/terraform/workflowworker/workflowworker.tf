@@ -1,36 +1,36 @@
-resource "kubernetes_config_map" "order-service-workflow-worker-configmap" {
+resource "kubernetes_config_map" "e-commerce-workflow-worker-configmap" {
   metadata {
-    name = "order-service-workflow-worker-config-map"
+    name = "e-commerce-workflow-worker-config-map"
     labels = {
-      name                         = "order-service-workflow-worker"
+      name                         = "e-commerce-workflow-worker"
     }
   }
 
   data = {
     GO_ENV                                               = "production"
     LOG_LEVEL                                            = "Info"
-    CADENCE_DOMAIN_NAME                                  = "order-service"
+    CADENCE_DOMAIN_NAME                                  = "e-commerce"
     CADENCE_FRONTEND_NAME                                = "cadence-frontend"
     CADENCE_CLIENT_NAME                                  = "cadence-client"
     CADENCE_HOST_ADDRESS_AND_PORT                        = "cadence-frontend-headless:7933"
   }
 }
 
-resource "kubernetes_secret" "order-service-workflow-worker-secret" {
+resource "kubernetes_secret" "e-commerce-workflow-worker-secret" {
   metadata {
-    name = "order-service-workflow-worker-secret"
+    name = "e-commerce-workflow-worker-secret"
     labels = {
-      name                         = "order-service-workflow-worker"
+      name                         = "e-commerce-workflow-worker"
     }
   }
 }
 
-resource "kubernetes_deployment" "order-service-workflow-worker-deployment" {
+resource "kubernetes_deployment" "e-commerce-workflow-worker-deployment" {
 
   metadata {
-    name = "order-service-workflow-worker"
+    name = "e-commerce-workflow-worker"
     labels = {
-      name                         = "order-service-workflow-worker"
+      name                         = "e-commerce-workflow-worker"
     }
   }
 
@@ -39,15 +39,15 @@ resource "kubernetes_deployment" "order-service-workflow-worker-deployment" {
 
     selector {
       match_labels = {
-        name = "order-service-workflow-worker"
+        name = "e-commerce-workflow-worker"
       }
     }
 
     template {
       metadata {
-        name = "order-service-workflow-worker"
+        name = "e-commerce-workflow-worker"
         labels = {
-          "name"                       = "order-service-workflow-worker"
+          "name"                       = "e-commerce-workflow-worker"
         }
       }
 
@@ -66,8 +66,8 @@ resource "kubernetes_deployment" "order-service-workflow-worker-deployment" {
         }
 
         container {
-          name              = "order-service-workflow-worker"
-          image             = "gcr.io/e-commerce-332709/order-service-workflow-worker:latest"
+          name              = "e-commerce-workflow-worker"
+          image             = "gcr.io/e-commerce-332709/e-commerce-workflow-worker:latest"
           image_pull_policy = "IfNotPresent"
 
           resources {
@@ -99,7 +99,7 @@ resource "kubernetes_deployment" "order-service-workflow-worker-deployment" {
             value_from {
               config_map_key_ref {
                 key  = "GO_ENV"
-                name = "order-service-workflow-worker-config-map"
+                name = "e-commerce-workflow-worker-config-map"
               }
             }
           }
@@ -109,7 +109,7 @@ resource "kubernetes_deployment" "order-service-workflow-worker-deployment" {
             value_from {
               config_map_key_ref {
                 key  = "LOG_LEVEL"
-                name = "order-service-workflow-worker-config-map"
+                name = "e-commerce-workflow-worker-config-map"
               }
             }
           }
@@ -119,7 +119,7 @@ resource "kubernetes_deployment" "order-service-workflow-worker-deployment" {
             value_from {
               config_map_key_ref {
                 key  = "CADENCE_DOMAIN_NAME"
-                name = "order-service-workflow-worker-config-map"
+                name = "e-commerce-workflow-worker-config-map"
               }
             }
           }
@@ -129,7 +129,7 @@ resource "kubernetes_deployment" "order-service-workflow-worker-deployment" {
             value_from {
               config_map_key_ref {
                 key  = "CADENCE_FRONTEND_NAME"
-                name = "order-service-workflow-worker-config-map"
+                name = "e-commerce-workflow-worker-config-map"
               }
             }
           }
@@ -139,7 +139,7 @@ resource "kubernetes_deployment" "order-service-workflow-worker-deployment" {
             value_from {
               config_map_key_ref {
                 key  = "CADENCE_CLIENT_NAME"
-                name = "order-service-workflow-worker-config-map"
+                name = "e-commerce-workflow-worker-config-map"
               }
             }
           }
@@ -149,7 +149,7 @@ resource "kubernetes_deployment" "order-service-workflow-worker-deployment" {
             value_from {
               config_map_key_ref {
                 key  = "CADENCE_HOST_ADDRESS_AND_PORT"
-                name = "order-service-workflow-worker-config-map"
+                name = "e-commerce-workflow-worker-config-map"
               }
             }
           }

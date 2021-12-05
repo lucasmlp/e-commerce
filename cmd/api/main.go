@@ -5,9 +5,9 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/machado-br/order-service/api"
-	"github.com/machado-br/order-service/domain/orders"
-	"github.com/machado-br/order-service/domain/products"
+	"github.com/machado-br/e-commerce/api"
+	"github.com/machado-br/e-commerce/domain/orders"
+	"github.com/machado-br/e-commerce/domain/products"
 )
 
 func main() {

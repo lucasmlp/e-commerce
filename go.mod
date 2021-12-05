@@ -1,4 +1,4 @@
-module github.com/machado-br/order-service
+module github.com/machado-br/e-commerce
 
 go 1.17
 

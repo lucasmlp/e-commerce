@@ -4,11 +4,11 @@ import (
 	"log"
 	"os"
 
-	"github.com/machado-br/order-service/cadence/activities"
-	"github.com/machado-br/order-service/cadence/helpers"
-	"github.com/machado-br/order-service/cadence/workflows"
-	"github.com/machado-br/order-service/domain/orders"
-	"github.com/machado-br/order-service/domain/products"
+	"github.com/machado-br/e-commerce/cadence/activities"
+	"github.com/machado-br/e-commerce/cadence/helpers"
+	"github.com/machado-br/e-commerce/cadence/workflows"
+	"github.com/machado-br/e-commerce/domain/orders"
+	"github.com/machado-br/e-commerce/domain/products"
 
 	"go.uber.org/cadence/activity"
 	"go.uber.org/cadence/worker"
