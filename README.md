@@ -11,8 +11,10 @@ To fire up the server locally you will need to have docker configured on your ma
 make database
 ```
 
-2 - Manually create database and collections: 
+2 - Manually create database and collections:
+
 2.1 Database: order-service - Collection: orders
+
 2.2 Database product-service - Collection: products
 
 3 - Fire up the server:
@@ -68,4 +70,9 @@ make cadence-containers
 4 - Start as many workers you'd like:
 ```
 make cadence-worker
+```
+
+5 - Start order workflow:
+```
+make order
 ```
