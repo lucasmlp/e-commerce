@@ -11,19 +11,13 @@ To fire up the server locally you will need to have docker configured on your ma
 make database
 ```
 
-2 - Manually create database and collections:
-
-2.1 Database: order-service - Collection: orders
-
-2.2 Database product-service - Collection: products
-
-3 - Fire up the server:
+2 - Fire up the server:
 
 ```
 make server
 ```
 
-4 - Create a product by sending a POST reques to to http://localhost:8080/products with the following body:
+3 - Create a product by sending a POST reques to to http://localhost:8080/products with the following body:
 ```json
 {
 	"productId":  "dbc9753d-2b2a-487c-a6bc-c8bffd901c68",
@@ -33,7 +27,7 @@ make server
 }
 ```
 
-5 - Create a order by sending a POST reques to to http://localhost:8080/orders with the following body:
+4 - Create a order by sending a POST reques to to http://localhost:8080/orders with the following body:
 ```json
 {
 	"orderId":  "c52c657f-dbb6-4027-8844-9e1f4c97fe59",
@@ -58,21 +52,30 @@ To fire up a order workflow locally you will need to have docker configured on y
 make database
 ```
 
-2 - Manually create database and collections if you haven't already created:
-2.1 Database: order-service - Collection: orders
-2.2 Database product-service - Collection: products
+2 - Start all cadence containers needed to run the workflow:
 
-3 - Start all cadence containers needed to run the workflow:
 ```
 make cadence-containers
 ```
 
+3 - Register the order-service domain in cadence server:
+
+```console
+docker exec -it cadence-server /bin/bash
+```
+
+```console
+cadence --address $(hostname -i):7933 --do e-commerce domain register
+```
+
 4 - Start as many workers you'd like:
+
 ```
 make cadence-worker
 ```
 
-5 - Start order workflow:
+5 - Run the order workflow:
+
 ```
 make order
 ```
