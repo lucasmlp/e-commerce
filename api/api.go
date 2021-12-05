@@ -89,7 +89,7 @@ func (a api) Engine() *gin.Engine {
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, err)
 			}
-			c.JSON(http.StatusNoContent, "")
+			c.Status(http.StatusNoContent)
 		})
 
 		ordersRoot.PUT("", func(c *gin.Context) {
@@ -101,11 +101,11 @@ func (a api) Engine() *gin.Engine {
 				c.JSON(http.StatusUnprocessableEntity, err)
 			}
 
-			result, err := a.OrdersService.Update(c, order)
+			err = a.OrdersService.Update(c, order)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, err)
 			}
-			c.JSON(http.StatusOK, result)
+			c.Status(http.StatusNoContent)
 		})
 	}
 
@@ -157,7 +157,7 @@ func (a api) Engine() *gin.Engine {
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, err)
 			}
-			c.JSON(http.StatusNoContent, "")
+			c.Status(http.StatusNoContent)
 		})
 
 		productsRoot.PUT("", func(c *gin.Context) {
@@ -169,11 +169,11 @@ func (a api) Engine() *gin.Engine {
 				c.JSON(http.StatusUnprocessableEntity, err)
 			}
 
-			result, err := a.ProductsService.Update(c, product)
+			_, err = a.ProductsService.Update(c, product)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, err)
 			}
-			c.JSON(http.StatusOK, result)
+			c.Status(http.StatusNoContent)
 		})
 	}
 

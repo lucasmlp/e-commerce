@@ -95,12 +95,11 @@ func (mr *MockServiceMockRecorder) FindAll(ctx interface{}) *gomock.Call {
 }
 
 // Update mocks base method.
-func (m *MockService) Update(ctx context.Context, order dtos.Order) (string, error) {
+func (m *MockService) Update(ctx context.Context, order dtos.Order) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", ctx, order)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // Update indicates an expected call of Update.

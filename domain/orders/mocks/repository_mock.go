@@ -51,11 +51,12 @@ func (mr *MockRepositoryMockRecorder) Create(ctx, order interface{}) *gomock.Cal
 }
 
 // Delete mocks base method.
-func (m *MockRepository) Delete(ctx context.Context, orderId string) error {
+func (m *MockRepository) Delete(ctx context.Context, orderId string) (int, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", ctx, orderId)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Delete indicates an expected call of Delete.
@@ -95,10 +96,10 @@ func (mr *MockRepositoryMockRecorder) FindAll(ctx interface{}) *gomock.Call {
 }
 
 // Replace mocks base method.
-func (m *MockRepository) Replace(ctx context.Context, order entities.Order) (string, error) {
+func (m *MockRepository) Replace(ctx context.Context, order entities.Order) (int, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Replace", ctx, order)
-	ret0, _ := ret[0].(string)
+	ret0, _ := ret[0].(int)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

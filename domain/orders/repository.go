@@ -21,8 +21,8 @@ type Repository interface {
 	FindAll(ctx context.Context) ([]entities.Order, error)
 	Find(ctx context.Context, orderId string) (entities.Order, error)
 	Create(ctx context.Context, order entities.Order) (string, error)
-	Delete(ctx context.Context, orderId string) error
-	Replace(ctx context.Context, order entities.Order) (string, error)
+	Delete(ctx context.Context, orderId string) (int, error)
+	Replace(ctx context.Context, order entities.Order) (int, error)
 	UpdateStatus(ctx context.Context, orderId string, status string) (int, error)
 }
 
@@ -45,6 +45,7 @@ func NewRepository(
 		MongoClient: mongoClient,
 	}, nil
 }
+
 func buildMongoclient(ctx context.Context, databaseUri string) (*mongo.Client, error) {
 	log.Println("repository.buildMongoclient")
 
@@ -125,43 +126,44 @@ func (r repository) Create(ctx context.Context, order entities.Order) (string, e
 		return "", err
 	}
 
-	_, err = r.Collection.InsertOne(ctx, doc)
+	result, err := r.Collection.InsertOne(ctx, doc)
 	if err != nil {
 		return "", err
 	}
 
-	return order.OrderId, nil
+	insertedId := result.InsertedID.(primitive.ObjectID).String()
+	return insertedId, nil
 }
 
-func (r repository) Delete(ctx context.Context, orderId string) error {
+func (r repository) Delete(ctx context.Context, orderId string) (int, error) {
 	log.Println("repository.delete")
 
 	filter := bson.D{primitive.E{Key: "orderId", Value: orderId}}
 
-	_, err := r.Collection.DeleteOne(ctx, filter)
+	result, err := r.Collection.DeleteOne(ctx, filter)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	return nil
+	return int(result.DeletedCount), nil
 }
 
-func (r repository) Replace(ctx context.Context, order entities.Order) (string, error) {
+func (r repository) Replace(ctx context.Context, order entities.Order) (int, error) {
 	log.Println("repository.update")
 
 	doc, err := bson.Marshal(order)
 	if err != nil {
-		return "", err
+		return 0, err
 	}
 	filter := bson.D{primitive.E{Key: "orderId", Value: order.OrderId}}
 
-	_, err = r.Collection.ReplaceOne(ctx, filter, doc)
+	result, err := r.Collection.ReplaceOne(ctx, filter, doc)
 	if err != nil {
 		log.Printf("err: %v\n", err)
-		return "", err
+		return 0, err
 	}
 
-	return "", nil
+	return int(result.ModifiedCount), nil
 }
 
 func (r repository) UpdateStatus(ctx context.Context, orderId string, status string) (int, error) {

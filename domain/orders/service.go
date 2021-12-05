@@ -2,6 +2,7 @@ package orders
 
 import (
 	"context"
+	"errors"
 	"log"
 
 	"github.com/machado-br/order-service/domain/dtos"
@@ -16,7 +17,7 @@ type Service interface {
 	Find(ctx context.Context, id string) (dtos.Order, error)
 	Create(ctx context.Context, order dtos.Order) (string, error)
 	Delete(ctx context.Context, orderId string) error
-	Update(ctx context.Context, order dtos.Order) (string, error)
+	Update(ctx context.Context, order dtos.Order) error
 	UpdateStatus(ctx context.Context, orderId string, status string) (int, error)
 }
 
@@ -83,34 +84,43 @@ func (s service) Create(ctx context.Context, order dtos.Order) (string, error) {
 func (s service) Delete(ctx context.Context, orderId string) error {
 	log.Println("service.deleteOrder")
 
-	err := s.repo.Delete(ctx, orderId)
+	deletedCount, err := s.repo.Delete(ctx, orderId)
 	if err != nil {
 		return err
+	}
+
+	if deletedCount == 0 {
+		return errors.New("unable to delete document")
 	}
 
 	return nil
 }
 
-func (s service) Update(ctx context.Context, order dtos.Order) (string, error) {
+func (s service) Update(ctx context.Context, order dtos.Order) error {
 	log.Println("service.updateOrder")
 
 	orderEntity, err := s.repo.Find(ctx, order.OrderId)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	entity, err := mapToEntity(ctx, order)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	entity.Id = orderEntity.Id
 
-	result, err := s.repo.Replace(ctx, entity)
+	updatedCount, err := s.repo.Replace(ctx, entity)
 	if err != nil {
-		return "", err
+		return err
 	}
-	return result, nil
+
+	if updatedCount == 0 {
+		return errors.New("unable to update document")
+	}
+
+	return nil
 }
 
 func (s service) UpdateStatus(ctx context.Context, orderId string, status string) (int, error) {

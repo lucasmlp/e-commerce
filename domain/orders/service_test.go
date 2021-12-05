@@ -231,7 +231,7 @@ func TestDelete(t *testing.T) {
 		repoM := mocks.NewMockRepository(ctrl)
 		ordersService := NewService(repoM)
 
-		repoM.EXPECT().Delete(ctx, orderIdM).Return(nil)
+		repoM.EXPECT().Delete(ctx, orderIdM).Return(1, nil)
 
 		err := ordersService.Delete(ctx, orderIdM)
 
@@ -249,7 +249,7 @@ func TestDelete(t *testing.T) {
 
 		errM := errors.New("mock error")
 
-		repoM.EXPECT().Delete(ctx, orderIdM).Return(errM)
+		repoM.EXPECT().Delete(ctx, orderIdM).Return(0, errM)
 
 		err := ordersService.Delete(ctx, orderIdM)
 		assert.Error(t, err, errM.Error())
@@ -298,20 +298,18 @@ func TestUpdate(t *testing.T) {
 			Status:          statusM,
 		}
 
-		returnM := "result"
-
-		want := "result"
+		returnM := 1
 
 		repoM.EXPECT().Find(ctx, orderIdM).Return(returnFindM, nil)
 
 		repoM.EXPECT().Replace(ctx, payloadRepoM).Return(returnM, nil)
 
-		result, err := ordersService.Update(ctx, payloadM)
+		err := ordersService.Update(ctx, payloadM)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		assert.DeepEqual(t, want, result)
+		assert.NilError(t, err)
 	})
 
 	t.Run("Failure responses", func(t *testing.T) {
@@ -370,7 +368,7 @@ func TestUpdate(t *testing.T) {
 
 					repoM.EXPECT().Find(ctx, orderIdM).Return(returnFindM, nil)
 
-					repoM.EXPECT().Replace(ctx, payloadRepoM).Return("", errM)
+					repoM.EXPECT().Replace(ctx, payloadRepoM).Return(0, errM)
 
 					return repoM
 				},
@@ -383,8 +381,8 @@ func TestUpdate(t *testing.T) {
 
 				ordersService := NewService(tc.repoM(ctx, ctrl))
 
-				_, err := ordersService.Update(ctx, payloadM)
-				assert.Error(t, err, errM.Error())
+				err := ordersService.Update(ctx, payloadM)
+				assert.DeepEqual(t, err.Error(), tc.err.Error())
 			})
 		}
 
