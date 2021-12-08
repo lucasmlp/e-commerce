@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"strconv"
 
 	"github.com/machado-br/e-commerce/domain/entities"
 	"go.mongodb.org/mongo-driver/bson"
@@ -23,8 +22,8 @@ type Repository interface {
 	FindAll(ctx context.Context) ([]entities.Product, error)
 	Find(ctx context.Context, productId string) (entities.Product, error)
 	Create(ctx context.Context, product entities.Product) (string, error)
-	Delete(ctx context.Context, productId string) error
-	Replace(ctx context.Context, product entities.Product) (string, error)
+	Delete(ctx context.Context, productId string) (int, error)
+	Replace(ctx context.Context, product entities.Product) (int, error)
 }
 
 func NewRepository(
@@ -128,33 +127,35 @@ func (r repository) Create(ctx context.Context, product entities.Product) (strin
 		return "", err
 	}
 
-	_, err = r.Collection.InsertOne(ctx, doc)
+	result, err := r.Collection.InsertOne(ctx, doc)
 	if err != nil {
 		return "", err
 	}
 
-	return product.ProductId, nil
+	insertedId := result.InsertedID.(primitive.ObjectID).String()
+
+	return insertedId, nil
 }
 
-func (r repository) Delete(ctx context.Context, productId string) error {
+func (r repository) Delete(ctx context.Context, productId string) (int, error) {
 	log.Println("repository.delete")
 
 	filter := bson.D{primitive.E{Key: "productId", Value: productId}}
 
-	_, err := r.Collection.DeleteOne(ctx, filter)
+	result, err := r.Collection.DeleteOne(ctx, filter)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	return nil
+	return int(result.DeletedCount), nil
 }
 
-func (r repository) Replace(ctx context.Context, product entities.Product) (string, error) {
+func (r repository) Replace(ctx context.Context, product entities.Product) (int, error) {
 	log.Println("repository.update")
 
 	doc, err := bson.Marshal(product)
 	if err != nil {
-		return "", err
+		return 0, err
 	}
 
 	fmt.Printf("product: %v\n", product)
@@ -164,8 +165,8 @@ func (r repository) Replace(ctx context.Context, product entities.Product) (stri
 	result, err := r.Collection.ReplaceOne(ctx, filter, doc)
 	if err != nil {
 		log.Printf("err: %v\n", err)
-		return "", err
+		return 0, err
 	}
 
-	return strconv.FormatInt(result.ModifiedCount, 32), nil
+	return int(result.ModifiedCount), nil
 }

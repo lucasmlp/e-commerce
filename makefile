@@ -52,6 +52,7 @@ mock:
 	@ echo
 	@ echo "Starting building mocks..."
 	@ echo
-	@ mkdir -p mocks
 	@ mockgen -source=domain/orders/service.go -destination=domain/orders/mocks/service_mock.go -package=mocks
 	@ mockgen -source=domain/orders/repository.go -destination=domain/orders/mocks/repository_mock.go -package=mocks
+	@ mockgen -source=domain/products/service.go -destination=domain/products/mocks/service_mock.go -package=mocks
+	@ mockgen -source=domain/products/repository.go -destination=domain/products/mocks/repository_mock.go -package=mocks

@@ -2,6 +2,7 @@ package products
 
 import (
 	"context"
+	"errors"
 	"log"
 
 	"github.com/machado-br/e-commerce/domain/dtos"
@@ -16,7 +17,7 @@ type Service interface {
 	Find(ctx context.Context, id string) (dtos.Product, error)
 	Create(ctx context.Context, product dtos.Product) (string, error)
 	Delete(ctx context.Context, productId string) error
-	Update(ctx context.Context, product dtos.Product) (string, error)
+	Update(ctx context.Context, product dtos.Product) error
 }
 
 func NewService(
@@ -82,38 +83,47 @@ func (s service) Create(ctx context.Context, product dtos.Product) (string, erro
 func (s service) Delete(ctx context.Context, productId string) error {
 	log.Println("service.deleteProduct")
 
-	err := s.repo.Delete(ctx, productId)
+	deletedCount, err := s.repo.Delete(ctx, productId)
 	if err != nil {
 		return err
+	}
+
+	if deletedCount == 0 {
+		return errors.New("unable to delete document")
 	}
 
 	return nil
 }
 
-func (s service) Update(ctx context.Context, product dtos.Product) (string, error) {
+func (s service) Update(ctx context.Context, product dtos.Product) error {
 	log.Println("service.updateProduct")
 
 	productEntity, err := s.repo.Find(ctx, product.ProductId)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	log.Printf("productEntity: %v\n", productEntity)
 
 	entity, err := mapToEntity(ctx, product)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	entity.Id = productEntity.Id
 
 	log.Printf("entity: %v\n", entity)
 
-	result, err := s.repo.Replace(ctx, entity)
+	updatedCount, err := s.repo.Replace(ctx, entity)
 	if err != nil {
-		return "", err
+		return err
 	}
-	return result, nil
+
+	if updatedCount == 0 {
+		return errors.New("unable to update document")
+	}
+
+	return nil
 }
 
 func mapToEntity(ctx context.Context, productDto dtos.Product) (entities.Product, error) {
