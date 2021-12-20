@@ -10,6 +10,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	dtos "github.com/machado-br/e-commerce/domain/dtos"
+	uuid "github.com/pborman/uuid"
 )
 
 // MockService is a mock of Service interface.
@@ -51,7 +52,7 @@ func (mr *MockServiceMockRecorder) Create(ctx, product interface{}) *gomock.Call
 }
 
 // Delete mocks base method.
-func (m *MockService) Delete(ctx context.Context, productId string) error {
+func (m *MockService) Delete(ctx context.Context, productId uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", ctx, productId)
 	ret0, _ := ret[0].(error)
@@ -65,7 +66,7 @@ func (mr *MockServiceMockRecorder) Delete(ctx, productId interface{}) *gomock.Ca
 }
 
 // Find mocks base method.
-func (m *MockService) Find(ctx context.Context, id string) (dtos.Product, error) {
+func (m *MockService) Find(ctx context.Context, id uuid.UUID) (dtos.Product, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Find", ctx, id)
 	ret0, _ := ret[0].(dtos.Product)
@@ -95,12 +96,11 @@ func (mr *MockServiceMockRecorder) FindAll(ctx interface{}) *gomock.Call {
 }
 
 // Update mocks base method.
-func (m *MockService) Update(ctx context.Context, product dtos.Product) (string, error) {
+func (m *MockService) Update(ctx context.Context, product dtos.Product) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", ctx, product)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // Update indicates an expected call of Update.

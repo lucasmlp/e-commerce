@@ -10,6 +10,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	entities "github.com/machado-br/e-commerce/domain/entities"
+	uuid "github.com/pborman/uuid"
 )
 
 // MockRepository is a mock of Repository interface.
@@ -51,7 +52,7 @@ func (mr *MockRepositoryMockRecorder) Create(ctx, product interface{}) *gomock.C
 }
 
 // Delete mocks base method.
-func (m *MockRepository) Delete(ctx context.Context, productId string) (int, error) {
+func (m *MockRepository) Delete(ctx context.Context, productId uuid.UUID) (int, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", ctx, productId)
 	ret0, _ := ret[0].(int)
@@ -66,7 +67,7 @@ func (mr *MockRepositoryMockRecorder) Delete(ctx, productId interface{}) *gomock
 }
 
 // Find mocks base method.
-func (m *MockRepository) Find(ctx context.Context, productId string) (entities.Product, error) {
+func (m *MockRepository) Find(ctx context.Context, productId uuid.UUID) (entities.Product, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Find", ctx, productId)
 	ret0, _ := ret[0].(entities.Product)

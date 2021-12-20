@@ -3,11 +3,13 @@ package api
 import (
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/machado-br/e-commerce/domain/dtos"
 	"github.com/machado-br/e-commerce/domain/orders"
 	"github.com/machado-br/e-commerce/domain/products"
+	"github.com/pborman/uuid"
 )
 
 type api struct {
@@ -114,13 +116,18 @@ func (a api) Engine() *gin.Engine {
 		productsRoot.GET("/:id", func(c *gin.Context) {
 			log.Println("GET /products/:id")
 
-			productId := c.Param("id")
-
-			product, err := a.ProductsService.Find(c, productId)
-			if err != nil {
-				c.JSON(http.StatusInternalServerError, err)
+			productId := uuid.Parse(c.Param("id"))
+			if productId == nil {
+				c.JSON(http.StatusUnprocessableEntity, "productId must be a uuid")
+			} else if strings.Compare(productId.String(), uuid.NIL.String()) == 0 {
+				c.JSON(http.StatusUnprocessableEntity, "productId must cannot be an empty uuid")
+			} else {
+				product, err := a.ProductsService.Find(c, productId)
+				if err != nil {
+					c.JSON(http.StatusInternalServerError, err)
+				}
+				c.JSON(http.StatusOK, product)
 			}
-			c.JSON(http.StatusOK, product)
 		})
 
 		productsRoot.GET("", func(c *gin.Context) {
@@ -140,24 +147,33 @@ func (a api) Engine() *gin.Engine {
 			err := c.ShouldBindJSON(&product)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, err)
+			} else if strings.Compare(product.ProductId.String(), uuid.NIL.String()) == 0 {
+				c.JSON(http.StatusUnprocessableEntity, "productId must cannot be an empty uuid")
+			} else {
+				result, err := a.ProductsService.Create(c, product)
+				if err != nil {
+					c.JSON(http.StatusInternalServerError, err)
+				}
+				c.JSON(http.StatusOK, result)
 			}
-
-			result, err := a.ProductsService.Create(c, product)
-			if err != nil {
-				c.JSON(http.StatusInternalServerError, err)
-			}
-			c.JSON(http.StatusOK, result)
 		})
 
 		productsRoot.DELETE(":id", func(c *gin.Context) {
 			log.Println("DELETE /products")
 
-			productId := c.Param("id")
-			err := a.ProductsService.Delete(c, productId)
-			if err != nil {
-				c.JSON(http.StatusInternalServerError, err)
+			productId := uuid.Parse(c.Param("id"))
+			if productId == nil {
+				c.JSON(http.StatusUnprocessableEntity, "productId must be a uuid")
+			} else if strings.Compare(productId.String(), uuid.NIL.String()) == 0 {
+				c.JSON(http.StatusUnprocessableEntity, "productId must cannot be an empty uuid")
+			} else {
+				err := a.ProductsService.Delete(c, productId)
+				if err != nil {
+					c.JSON(http.StatusInternalServerError, err)
+				} else {
+					c.Status(http.StatusNoContent)
+				}
 			}
-			c.Status(http.StatusNoContent)
 		})
 
 		productsRoot.PUT("", func(c *gin.Context) {
@@ -167,13 +183,16 @@ func (a api) Engine() *gin.Engine {
 			err := c.ShouldBindJSON(&product)
 			if err != nil {
 				c.JSON(http.StatusUnprocessableEntity, err)
+			} else if strings.Compare(product.ProductId.String(), uuid.NIL.String()) == 0 {
+				c.JSON(http.StatusUnprocessableEntity, "productId must cannot be an empty uuid")
+			} else {
+				err = a.ProductsService.Update(c, product)
+				if err != nil {
+					c.JSON(http.StatusInternalServerError, err)
+				} else {
+					c.Status(http.StatusNoContent)
+				}
 			}
-
-			_, err = a.ProductsService.Update(c, product)
-			if err != nil {
-				c.JSON(http.StatusInternalServerError, err)
-			}
-			c.Status(http.StatusNoContent)
 		})
 	}
 
