@@ -7,6 +7,7 @@ import (
 
 	"github.com/machado-br/e-commerce/domain/dtos"
 	"github.com/machado-br/e-commerce/domain/entities"
+	"github.com/pborman/uuid"
 )
 
 type service struct {
@@ -14,9 +15,9 @@ type service struct {
 }
 type Service interface {
 	FindAll(ctx context.Context) ([]dtos.Product, error)
-	Find(ctx context.Context, id string) (dtos.Product, error)
+	Find(ctx context.Context, id uuid.UUID) (dtos.Product, error)
 	Create(ctx context.Context, product dtos.Product) (string, error)
-	Delete(ctx context.Context, productId string) error
+	Delete(ctx context.Context, productId uuid.UUID) error
 	Update(ctx context.Context, product dtos.Product) error
 }
 
@@ -48,7 +49,7 @@ func (s service) FindAll(ctx context.Context) ([]dtos.Product, error) {
 	return result, nil
 }
 
-func (s service) Find(ctx context.Context, id string) (dtos.Product, error) {
+func (s service) Find(ctx context.Context, id uuid.UUID) (dtos.Product, error) {
 	log.Println("service.getProduct")
 
 	product, err := s.repo.Find(ctx, id)
@@ -80,7 +81,7 @@ func (s service) Create(ctx context.Context, product dtos.Product) (string, erro
 	return result, nil
 }
 
-func (s service) Delete(ctx context.Context, productId string) error {
+func (s service) Delete(ctx context.Context, productId uuid.UUID) error {
 	log.Println("service.deleteProduct")
 
 	deletedCount, err := s.repo.Delete(ctx, productId)

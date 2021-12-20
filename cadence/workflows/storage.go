@@ -54,9 +54,9 @@ func (s StorageWorkflow) RunStorage(ctx workflow.Context, productId string, quan
 		return dtos.Product{}, err
 	}
 
-	if strings.Compare(product.ProductId, "") == 0 || product.ProductId == string(uuid.NIL) {
+	if strings.Compare(product.ProductId.String(), uuid.NIL.String()) == 0 || product.ProductId.String() == uuid.NIL.String() {
 		logger.Error("product not found",
-			zap.String("product id:", product.ProductId),
+			zap.String("product id:", product.ProductId.String()),
 		)
 
 		return dtos.Product{}, errors.New("product not found")
@@ -73,7 +73,7 @@ func (s StorageWorkflow) RunStorage(ctx workflow.Context, productId string, quan
 		return dtos.Product{}, errors.New("not enough product units")
 	} else {
 		product.Units = product.Units - quantity
-		var result string
+		var result int
 		future := workflow.ExecuteActivity(ctx, s.Activities.UpdateProduct, product)
 		if err := future.Get(ctx, &result); err != nil {
 			workflow.GetLogger(ctx).Error("reservation on product units failed.", zap.Error(err))

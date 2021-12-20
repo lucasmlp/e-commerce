@@ -6,6 +6,7 @@ import (
 	"github.com/machado-br/e-commerce/domain/dtos"
 	"github.com/machado-br/e-commerce/domain/orders"
 	"github.com/machado-br/e-commerce/domain/products"
+	"github.com/pborman/uuid"
 )
 
 type Activities struct {
@@ -30,7 +31,7 @@ func (a Activities) GetOrder(ctx context.Context, orderId string) (dtos.Order, e
 	return order, nil
 }
 
-func (a Activities) GetProduct(ctx context.Context, productId string) (dtos.Product, error) {
+func (a Activities) GetProduct(ctx context.Context, productId uuid.UUID) (dtos.Product, error) {
 
 	product, err := a.ProductsService.Find(ctx, productId)
 	if err != nil {
@@ -39,13 +40,13 @@ func (a Activities) GetProduct(ctx context.Context, productId string) (dtos.Prod
 	return product, nil
 }
 
-func (a Activities) UpdateProduct(ctx context.Context, product dtos.Product) (string, error) {
+func (a Activities) UpdateProduct(ctx context.Context, product dtos.Product) error {
 
-	result, err := a.ProductsService.Update(ctx, product)
+	err := a.ProductsService.Update(ctx, product)
 	if err != nil {
-		return "", err
+		return err
 	}
-	return result, nil
+	return nil
 }
 
 func (a Activities) UpdateOrderStatus(ctx context.Context, orderId string, status string) (int, error) {

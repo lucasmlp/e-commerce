@@ -1,5 +1,7 @@
 package dtos
 
+import "github.com/pborman/uuid"
+
 type Order struct {
 	OrderId         string `json:"orderId" binding:"required"`
 	UserId          string `json:"userId" binding:"required"`
@@ -10,8 +12,8 @@ type Order struct {
 }
 
 type Product struct {
-	ProductId string  `json:"productId" binding:"required"`
-	Name      string  `json:"name" binding:"required"`
-	Units     int     `json:"units" binding:"required"`
-	Price     float64 `json:"price" binding:"required"`
+	ProductId uuid.UUID `bson:"productId" binding:"required"`
+	Name      string    `bson:"name" binding:"required"`
+	Units     int       `bson:"units" binding:"required"`
+	Price     int       `bson:"price" binding:"required"`
 }

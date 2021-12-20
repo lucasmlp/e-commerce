@@ -17,7 +17,7 @@ func TestFind(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
 
-	productIdM := uuid.New()
+	productIdM := uuid.NewUUID()
 
 	t.Run("Successful responses", func(t *testing.T) {
 
@@ -46,7 +46,7 @@ func TestFind(t *testing.T) {
 		ctx := context.Background()
 		ctrl := gomock.NewController(t)
 
-		productIdM := uuid.New()
+		productIdM := uuid.NewUUID()
 
 		repoM := mocks.NewMockRepository(ctrl)
 		productsService := NewService(repoM)
@@ -64,7 +64,7 @@ func TestFindAll(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
 
-	productIdM := uuid.New()
+	productIdM := uuid.NewUUID()
 
 	t.Run("Successful responses", func(t *testing.T) {
 
@@ -112,7 +112,7 @@ func TestFindAll(t *testing.T) {
 func TestCreate(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
-	productIdM := uuid.New()
+	productIdM := uuid.NewUUID()
 
 	t.Run("Successful responses", func(t *testing.T) {
 
@@ -169,7 +169,7 @@ func TestDelete(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
 
-	productIdM := uuid.New()
+	productIdM := uuid.NewUUID()
 
 	t.Run("Successful responses", func(t *testing.T) {
 
@@ -187,7 +187,7 @@ func TestDelete(t *testing.T) {
 		ctx := context.Background()
 		ctrl := gomock.NewController(t)
 
-		productIdM := uuid.New()
+		productIdM := uuid.NewUUID()
 
 		repoM := mocks.NewMockRepository(ctrl)
 		productsService := NewService(repoM)
@@ -204,7 +204,7 @@ func TestDelete(t *testing.T) {
 func TestUpdate(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
-	productIdM := uuid.New()
+	productIdM := uuid.NewUUID()
 
 	t.Run("Successful responses", func(t *testing.T) {
 

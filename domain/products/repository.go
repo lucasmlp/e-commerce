@@ -7,6 +7,7 @@ import (
 	"log"
 
 	"github.com/machado-br/e-commerce/domain/entities"
+	"github.com/pborman/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -20,9 +21,9 @@ type repository struct {
 }
 type Repository interface {
 	FindAll(ctx context.Context) ([]entities.Product, error)
-	Find(ctx context.Context, productId string) (entities.Product, error)
+	Find(ctx context.Context, productId uuid.UUID) (entities.Product, error)
 	Create(ctx context.Context, product entities.Product) (string, error)
-	Delete(ctx context.Context, productId string) (int, error)
+	Delete(ctx context.Context, productId uuid.UUID) (int, error)
 	Replace(ctx context.Context, product entities.Product) (int, error)
 }
 
@@ -94,7 +95,7 @@ func (r repository) FindAll(ctx context.Context) ([]entities.Product, error) {
 	return products, nil
 }
 
-func (r repository) Find(ctx context.Context, productId string) (entities.Product, error) {
+func (r repository) Find(ctx context.Context, productId uuid.UUID) (entities.Product, error) {
 	log.Println("repository.get")
 	log.Println("productId: ", productId)
 
@@ -137,7 +138,7 @@ func (r repository) Create(ctx context.Context, product entities.Product) (strin
 	return insertedId, nil
 }
 
-func (r repository) Delete(ctx context.Context, productId string) (int, error) {
+func (r repository) Delete(ctx context.Context, productId uuid.UUID) (int, error) {
 	log.Println("repository.delete")
 
 	filter := bson.D{primitive.E{Key: "productId", Value: productId}}

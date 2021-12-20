@@ -68,7 +68,7 @@ func (o OrderWorkflow) RunOrder(ctx workflow.Context, orderId string) error {
 		return err
 	}
 
-	err = o.handlePaymentProcess(ctx, order.OrderId, order.UserId, product.Price*float64(order.Quantity))
+	err = o.handlePaymentProcess(ctx, order.OrderId, order.UserId, float64(product.Price*order.Quantity/100))
 	if err != nil {
 		return err
 	}
