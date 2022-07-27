@@ -74,7 +74,7 @@ func main() {
 
 	switch name := action; name {
 	case "RunOrder":
-		orderId := "c52c657f-dbb6-4027-8844-9e1f4c97fe59"
+		orderId := "8a786ba1-a9c9-45bb-a4c8-0d6f3a4b08eb"
 		userId := uuid.New()
 		workflowId := orderId + ":" + userId
 
