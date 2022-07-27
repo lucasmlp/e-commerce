@@ -20,3 +20,6 @@
 *.tfstate
 *.backup
 change*
+
+# IDE files
+.vscode
