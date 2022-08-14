@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"log"
 	"os"
 
@@ -9,12 +11,38 @@ import (
 	"github.com/machado-br/e-commerce/cadence/workflows"
 	"github.com/machado-br/e-commerce/domain/orders"
 	"github.com/machado-br/e-commerce/domain/products"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"go.uber.org/cadence/activity"
 	"go.uber.org/cadence/worker"
 	"go.uber.org/cadence/workflow"
 	"go.uber.org/zap"
 )
+
+func buildMongoclient(ctx context.Context, databaseUri string) (*mongo.Client, error) {
+	log.Println("workfloWorker.main.buildMongoclient")
+
+	if databaseUri == "" {
+		log.Fatalln("You must set your 'MONGODB_URI' environmental variable. See\n\t https://docs.mongodb.com/drivers/go/current/usage-examples/#environment-variable")
+		return nil, errors.New("MongoDB URI not set in env file")
+	}
+
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(databaseUri))
+	if err != nil {
+		log.Println("err mongo.Connect")
+		log.Fatalln(err)
+		return nil, err
+	}
+
+	err = client.Ping(ctx, nil)
+	if err != nil {
+		log.Fatal(err)
+		return nil, err
+	}
+
+	return client, nil
+}
 
 func main() {
 
@@ -24,7 +52,14 @@ func main() {
 	productsDatabaseName := os.Getenv("PRODUCTS_DATABASE_NAME")
 	productsCollectionName := os.Getenv("PRODUCTS_COLLECTION_NAME")
 
-	ordersRepository, err := orders.NewRepository(mongoUri, ordersDatabaseName, ordersCollectionName)
+	mongoClient, err := buildMongoclient(context.Background(), mongoUri)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	ordersCollection := mongoClient.Database(ordersDatabaseName).Collection(ordersCollectionName)
+
+	ordersRepository, err := orders.NewRepository(mongoClient, ordersCollection)
 	if err != nil {
 		log.Fatalln(err)
 	}

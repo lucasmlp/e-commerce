@@ -15,7 +15,7 @@ import (
 )
 
 func buildMongoclient(ctx context.Context, databaseUri string) (*mongo.Client, error) {
-	log.Println("repository.buildMongoclient")
+	log.Println("api.main.buildMongoclient")
 
 	if databaseUri == "" {
 		log.Fatalln("You must set your 'MONGODB_URI' environmental variable. See\n\t https://docs.mongodb.com/drivers/go/current/usage-examples/#environment-variable")
