@@ -1,8 +1,0 @@
-make: Entering directory `/Users/lucas/development/e-commerce'
-echo
-echo "Starting the API..."
-echo
-go run ./cmd/api/main.go
- 
-make: Leaving directory `/Users/lucas/development/e-commerce'
- 

@@ -9,3 +9,7 @@ module "cassandra" {
 module "workflow-worker" {
   source = "./workflowworker"
 }
+
+module "api" {
+  source = "./api"
+}
