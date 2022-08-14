@@ -67,7 +67,9 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	productsRepository, err := products.NewRepository(mongoUri, productsDatabaseName, productsCollectionName)
+	productsCollection := mongoClient.Database(productsDatabaseName).Collection(productsCollectionName)
+
+	productsRepository, err := products.NewRepository(mongoClient, productsCollection)
 	if err != nil {
 		log.Fatalln(err)
 	}

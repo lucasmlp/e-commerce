@@ -15,9 +15,9 @@ import (
 )
 
 type repository struct {
-	DatabaseUri string
-	Collection  *mongo.Collection
-	MongoClient *mongo.Client
+	DatabaseUri     string
+	MongoCollection *mongo.Collection
+	MongoClient     *mongo.Client
 }
 type Repository interface {
 	FindAll(ctx context.Context) ([]entities.Product, error)
@@ -28,22 +28,13 @@ type Repository interface {
 }
 
 func NewRepository(
-	databaseUri string,
-	databaseName string,
-	collectionName string,
+	mongoClient *mongo.Client,
+	mongoCollection *mongo.Collection,
 ) (Repository, error) {
 
-	mongoClient, err := buildMongoclient(context.Background(), databaseUri)
-	if err != nil {
-		return nil, err
-	}
-
-	mongoCollection := mongoClient.Database(databaseName).Collection(collectionName)
-
 	return repository{
-		DatabaseUri: databaseUri,
-		Collection:  mongoCollection,
-		MongoClient: mongoClient,
+		MongoCollection: mongoCollection,
+		MongoClient:     mongoClient,
 	}, nil
 }
 
@@ -76,7 +67,7 @@ func (r repository) FindAll(ctx context.Context) ([]entities.Product, error) {
 
 	filter := bson.D{{}}
 
-	cursor, err := r.Collection.Find(ctx, filter)
+	cursor, err := r.MongoCollection.Find(ctx, filter)
 	if err != nil {
 		log.Println(err)
 		return []entities.Product{}, err
@@ -101,7 +92,7 @@ func (r repository) Find(ctx context.Context, productId uuid.UUID) (entities.Pro
 
 	filter := bson.D{primitive.E{Key: "productId", Value: productId}}
 
-	cursor, err := r.Collection.Find(ctx, filter)
+	cursor, err := r.MongoCollection.Find(ctx, filter)
 	if err != nil {
 		log.Println(err)
 		return entities.Product{}, err
@@ -128,7 +119,7 @@ func (r repository) Create(ctx context.Context, product entities.Product) (strin
 		return "", err
 	}
 
-	result, err := r.Collection.InsertOne(ctx, doc)
+	result, err := r.MongoCollection.InsertOne(ctx, doc)
 	if err != nil {
 		return "", err
 	}
@@ -143,7 +134,7 @@ func (r repository) Delete(ctx context.Context, productId uuid.UUID) (int, error
 
 	filter := bson.D{primitive.E{Key: "productId", Value: productId}}
 
-	result, err := r.Collection.DeleteOne(ctx, filter)
+	result, err := r.MongoCollection.DeleteOne(ctx, filter)
 	if err != nil {
 		return 0, err
 	}
@@ -163,7 +154,7 @@ func (r repository) Replace(ctx context.Context, product entities.Product) (int,
 
 	filter := bson.D{primitive.E{Key: "productId", Value: product.ProductId}}
 
-	result, err := r.Collection.ReplaceOne(ctx, filter, doc)
+	result, err := r.MongoCollection.ReplaceOne(ctx, filter, doc)
 	if err != nil {
 		log.Printf("err: %v\n", err)
 		return 0, err

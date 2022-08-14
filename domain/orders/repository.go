@@ -11,8 +11,8 @@ import (
 )
 
 type repository struct {
-	Collection  *mongo.Collection
-	MongoClient *mongo.Client
+	MongoCollection *mongo.Collection
+	MongoClient     *mongo.Client
 }
 type Repository interface {
 	FindAll(ctx context.Context) ([]entities.Order, error)
@@ -29,8 +29,8 @@ func NewRepository(
 ) (Repository, error) {
 
 	return repository{
-		Collection:  mongoCollection,
-		MongoClient: mongoClient,
+		MongoCollection: mongoCollection,
+		MongoClient:     mongoClient,
 	}, nil
 }
 
@@ -39,7 +39,7 @@ func (r repository) FindAll(ctx context.Context) ([]entities.Order, error) {
 
 	filter := bson.D{{}}
 
-	cursor, err := r.Collection.Find(ctx, filter)
+	cursor, err := r.MongoCollection.Find(ctx, filter)
 	if err != nil {
 		log.Println(err)
 		return []entities.Order{}, err
@@ -64,7 +64,7 @@ func (r repository) Find(ctx context.Context, orderId string) (entities.Order, e
 
 	filter := bson.D{primitive.E{Key: "orderId", Value: orderId}}
 
-	cursor, err := r.Collection.Find(ctx, filter)
+	cursor, err := r.MongoCollection.Find(ctx, filter)
 	if err != nil {
 		log.Println(err)
 		return entities.Order{}, err
@@ -90,7 +90,7 @@ func (r repository) Create(ctx context.Context, order entities.Order) (string, e
 		return "", err
 	}
 
-	result, err := r.Collection.InsertOne(ctx, doc)
+	result, err := r.MongoCollection.InsertOne(ctx, doc)
 	if err != nil {
 		return "", err
 	}
@@ -104,7 +104,7 @@ func (r repository) Delete(ctx context.Context, orderId string) (int, error) {
 
 	filter := bson.D{primitive.E{Key: "orderId", Value: orderId}}
 
-	result, err := r.Collection.DeleteOne(ctx, filter)
+	result, err := r.MongoCollection.DeleteOne(ctx, filter)
 	if err != nil {
 		return 0, err
 	}
@@ -121,7 +121,7 @@ func (r repository) Replace(ctx context.Context, order entities.Order) (int, err
 	}
 	filter := bson.D{primitive.E{Key: "orderId", Value: order.OrderId}}
 
-	result, err := r.Collection.ReplaceOne(ctx, filter, doc)
+	result, err := r.MongoCollection.ReplaceOne(ctx, filter, doc)
 	if err != nil {
 		log.Printf("err: %v\n", err)
 		return 0, err
@@ -138,7 +138,7 @@ func (r repository) UpdateStatus(ctx context.Context, orderId string, status str
 		{"$set", bson.D{{"status", status}}},
 	}
 
-	result, err := r.Collection.UpdateOne(ctx, filter, update)
+	result, err := r.MongoCollection.UpdateOne(ctx, filter, update)
 	if err != nil {
 		log.Printf("err: %v\n", err)
 		return 0, err
