@@ -1,12 +1,16 @@
-name: test_ECR
+name: Test build and push to ECR
 
-on: workflow_dispatch
-
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'environment'     
+        required: true
+        default: 'dev'
 jobs:
   build:
-
     runs-on: ubuntu-latest
-    environment: dev
+    environment: ${{ github.event.inputs.environment }}
     steps:
       - uses: actions/checkout@v3
 
@@ -47,5 +51,5 @@ jobs:
           CGO_ENABLED: 0
           GOOS: linux
         run: |
-          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -t $REGISTRY/$REPOSITORY:latest .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
