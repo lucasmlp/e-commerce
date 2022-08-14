@@ -50,9 +50,9 @@ jobs:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: e-commerce-api
           IMAGE_TAG: latest
-          GO111MODULE: ${{ secrets.GO111MODULE }}
-          CGO_ENABLED: ${{ secrets.CGO_ENABLED }}
-          GOOS: ${{ secrets.GOOS }}
+          GO111MODULE: on
+          CGO_ENABLED: 0
+          GOOS: linux
         run: |
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
