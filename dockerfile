@@ -3,9 +3,9 @@ FROM golang:1.16-stretch as builder_base
 
 WORKDIR /order
 
-ENV GO111MODULE=on
-ENV CGO_ENABLED=0
-ENV GOOS=linux
+ARG GO111MODULE
+ARG CGO_ENABLED
+ARG GOOS
 
 COPY go.mod .
 COPY go.sum .
