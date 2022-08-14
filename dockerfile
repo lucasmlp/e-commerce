@@ -13,12 +13,10 @@ FROM builder_base as builder
 COPY . /order_service
 WORKDIR /order_service
 
-RUN go build -a -installsuffix cgo -o workflowworker ./cmd/workflowworker
+RUN go build -a -installsuffix cgo -o api ./cmd/api
 
 # STAGE 2: Build Workflow Worker
 FROM alpine as workflowworker
-ADD https://github.com/golang/go/raw/master/lib/time/zoneinfo.zip /zoneinfo.zip
-ENV ZONEINFO /zoneinfo.zip
-COPY --from=builder /order_service/workflowworker /go/bin/workflowworker
+COPY --from=builder /order_service/api /go/bin/api
 RUN apk add -U --no-cache ca-certificates
-ENTRYPOINT /go/bin/workflowworker
+ENTRYPOINT /go/bin/api
