@@ -77,6 +77,6 @@ login-aws-ecr:
 
 docker-push-aws:
 	@ echo
-	@ echo "Pushing docker image for AWS..."
+	@ echo "Pushing docker image to AWS ECR..."
 	@ echo
 	@ docker push 774429751797.dkr.ecr.us-west-2.amazonaws.com/e-commerce-api:latest
