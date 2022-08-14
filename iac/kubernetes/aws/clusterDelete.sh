@@ -1,1 +1,1 @@
-eksctl delete cluster --name test-cluster
+eksctl delete cluster --name e-commerce
