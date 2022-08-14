@@ -2,15 +2,13 @@ name: Test build and push to ECR
 
 on:
   workflow_dispatch:
-    inputs:
-      environment:
-        description: 'environment'     
-        required: true
-        default: 'dev'
+  push:
+    branches:
+      - 'master'
 jobs:
   build:
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment }}
+    environment: dev
     steps:
       - uses: actions/checkout@v3
 
