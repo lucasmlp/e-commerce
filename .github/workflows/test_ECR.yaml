@@ -45,7 +45,7 @@ jobs:
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: e-commerce-api
-          IMAGE_TAG: latest
+          IMAGE_TAG: ${{ github.sha }}
           GO111MODULE: on
           CGO_ENABLED: 0
           GOOS: linux
