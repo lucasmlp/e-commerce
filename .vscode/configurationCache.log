@@ -1,1 +1,0 @@
-{"buildTargets":["cadence-containers","cadence-worker","connect","database","mock","order","payment-finished","server","shipment-finished","storage-check-reservation-finished","test"],"launchTargets":[],"customConfigurationProvider":{"workspaceBrowse":{"browsePath":[],"compilerArgs":[]},"fileIndex":[]}}
