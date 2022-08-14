@@ -14,8 +14,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment }}
-    env:
-
     steps:
       - uses: actions/checkout@v3
 
