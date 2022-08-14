@@ -7,6 +7,9 @@ on:
         description: 'environment'     
         required: true
         default: 'dev'
+  push:
+    branches:
+      - '3-aws-deployment'
 jobs:
   build:
     runs-on: ubuntu-latest
