@@ -54,6 +54,5 @@ jobs:
           CGO_ENABLED: ${{ secrets.CGO_ENABLED }}
           GOOS: ${{ secrets.GOOS }}
         run: |
-          docker build \
-            -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG

@@ -3,10 +3,6 @@ FROM golang:1.16-stretch as builder_base
 
 WORKDIR /order
 
-ARG GO111MODULE
-ARG CGO_ENABLED
-ARG GOOS
-
 COPY go.mod .
 COPY go.sum .
 
