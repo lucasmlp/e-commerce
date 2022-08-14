@@ -1,6 +1,6 @@
 eksctl create cluster \
-    --name test-cluster \
+    --name e-commerce \
     --region us-west-2 \
-    --nodegroup-name linux-nodes \
+    --nodegroup-name api \
     --node-type t2.micro \
-    --nodes 2
+    --nodes 1

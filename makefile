@@ -45,8 +45,8 @@ payment-finished:
 shipment-finished:
 	@ go run ./trigger/main.go ShipmentFinished $(filter-out $@,$(MAKECMDGOALS))
 	
-connect:
-	@ kubectl proxy --port=9874 &
+kubectl-proxy:
+	@ kubectl proxy --port=9874
 
 mock:
 	@ echo
@@ -56,3 +56,27 @@ mock:
 	@ mockgen -source=domain/orders/repository.go -destination=domain/orders/mocks/repository_mock.go -package=mocks
 	@ mockgen -source=domain/products/service.go -destination=domain/products/mocks/service_mock.go -package=mocks
 	@ mockgen -source=domain/products/repository.go -destination=domain/products/mocks/repository_mock.go -package=mocks
+
+docker-image:
+	@ echo
+	@ echo "Building docker image..."
+	@ echo
+	@ docker build -t machado-br/e-commerce-api:latest .
+
+docker-tag-aws:
+	@ echo
+	@ echo "Tagging docker image for AWS..."
+	@ echo
+	@ docker tag machado-br/e-commerce-api:latest 774429751797.dkr.ecr.us-west-2.amazonaws.com/e-commerce-api:latest
+
+login-aws-ecr:
+	@ echo
+	@ echo "Logging in AWS ECR..."
+	@ echo
+	@ aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 774429751797.dkr.ecr.us-west-2.amazonaws.com
+
+docker-push-aws:
+	@ echo
+	@ echo "Pushing docker image for AWS..."
+	@ echo
+	@ docker push 774429751797.dkr.ecr.us-west-2.amazonaws.com/e-commerce-api:latest
