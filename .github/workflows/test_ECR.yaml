@@ -1,9 +1,6 @@
 name: test_ECR
 
-on:
-  push:
-    branches:
-      - '3-aws-deployment'
+on: workflow_dispatch
 
 jobs:
   build:
