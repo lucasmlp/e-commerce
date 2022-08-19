@@ -2,19 +2,19 @@ resource "kubernetes_config_map" "e-commerce-api-configmap" {
   metadata {
     name = "e-commerce-api-config-map"
     labels = {
-      name                         = "e-commerce-api"
+      name = "e-commerce-api"
     }
   }
 
   data = {
-    GO_ENV                                               = "development"
-    LOG_LEVEL                                            = "Info"
-    MONGODB_URI                                  = "mongodb://localhost:27017"
-    ORDERS_DATABASE_NAME                                = "order-service"
-    ORDERS_COLLECTION_NAME                                  = "orders"
-    PRODUCTS_DATABASE_NAME                                = "product-service"
-    PRODUCTS_COLLECTION_NAME                                  = "products"
-    
+    GO_ENV                   = "development"
+    LOG_LEVEL                = "Info"
+    MONGODB_URI              = "mongodb://localhost:27017"
+    ORDERS_DATABASE_NAME     = "order-service"
+    ORDERS_COLLECTION_NAME   = "orders"
+    PRODUCTS_DATABASE_NAME   = "product-service"
+    PRODUCTS_COLLECTION_NAME = "products"
+
   }
 }
 
@@ -22,7 +22,7 @@ resource "kubernetes_secret" "e-commerce-api-secret" {
   metadata {
     name = "e-commerce-api-secret"
     labels = {
-      name                         = "e-commerce-api"
+      name = "e-commerce-api"
     }
   }
 }
@@ -32,7 +32,7 @@ resource "kubernetes_deployment" "e-commerce-api-deployment" {
   metadata {
     name = "e-commerce-api"
     labels = {
-      name                         = "e-commerce-api"
+      name = "e-commerce-api"
     }
   }
 
@@ -41,7 +41,7 @@ resource "kubernetes_deployment" "e-commerce-api-deployment" {
 
     selector {
       match_labels = {
-        name = "e-commerce-api"
+        name = "e-commerce-api-Nodepi"
       }
     }
 
@@ -49,7 +49,7 @@ resource "kubernetes_deployment" "e-commerce-api-deployment" {
       metadata {
         name = "e-commerce-api"
         labels = {
-          "name"                       = "e-commerce-api"
+          "name" = "e-commerce-api-Node"
         }
       }
 
@@ -64,14 +64,12 @@ resource "kubernetes_deployment" "e-commerce-api-deployment" {
         }
 
         node_selector = {
-          # change
-          "cloud.google.com/gke-nodepool" = "api"
+          "name" = "e-commerce-api-Node"
         }
 
         container {
           name              = "e-commerce-api"
-          # change
-          image             = "gcr.io/e-commerce-332709/e-commerce-api:latest"
+          image             = "774429751797.dkr.ecr.us-west-2.amazonaws.com/e-commerce-api:latest"
           image_pull_policy = "IfNotPresent"
 
           resources {
